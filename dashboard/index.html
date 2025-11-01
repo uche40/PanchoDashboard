@@ -732,58 +732,51 @@ function handleResize() {
 
 // ==================== MOBILE HEADER GESTURE CONTROLLER ====================
 
-let lastTouchY = 0;
-let lastScrollDirection = null;
-let scrollThreshold = 50;
-
 function initMobileHeaderGestures() {
     if (!isMobile) return;
     
     const mobileHeader = document.getElementById('mobile-header');
     if (!mobileHeader) return;
     
-    let touchStartY = 0;
-    let accumulatedDelta = 0;
+    let hideTimeout = null;
     
-    // Touch event handlers
+    // Hide header when user interacts with the iframe content area
+    function hideHeaderOnInteraction(e) {
+        // Don't hide if touching the header itself
+        if (mobileHeader.contains(e.target)) {
+            return;
+        }
+        
+        // Hide the header after a brief delay when touching content
+        clearTimeout(hideTimeout);
+        hideTimeout = setTimeout(() => {
+            mobileHeader.classList.add('header-hidden');
+        }, 300);
+    }
+    
+    // Show header when touching near the top
+    function showHeaderOnTopTouch(e) {
+        const touch = e.touches ? e.touches[0] : e;
+        const touchY = touch.clientY;
+        
+        // If touching top 20% of screen, show header
+        if (touchY < window.innerHeight * 0.2) {
+            mobileHeader.classList.remove('header-hidden');
+            clearTimeout(hideTimeout);
+        }
+    }
+    
+    // Listen for any touch on the page
     document.addEventListener('touchstart', (e) => {
-        touchStartY = e.touches[0].clientY;
-        accumulatedDelta = 0;
+        showHeaderOnTopTouch(e);
+        hideHeaderOnInteraction(e);
     }, { passive: true });
     
-    document.addEventListener('touchmove', (e) => {
-        const touchY = e.touches[0].clientY;
-        const deltaY = touchStartY - touchY;
-        accumulatedDelta += deltaY;
-        touchStartY = touchY;
-        
-        // Scrolling down (deltaY > 0) - hide header
-        if (accumulatedDelta > scrollThreshold && !mobileHeader.classList.contains('header-hidden')) {
-            mobileHeader.classList.add('header-hidden');
-            accumulatedDelta = 0;
-        }
-        // Scrolling up (deltaY < 0) - show header
-        else if (accumulatedDelta < -scrollThreshold && mobileHeader.classList.contains('header-hidden')) {
-            mobileHeader.classList.remove('header-hidden');
-            accumulatedDelta = 0;
-        }
-    }, { passive: true });
-    
-    // Wheel event as fallback for desktop testing
-    document.addEventListener('wheel', (e) => {
-        if (!isMobile) return;
-        
-        const deltaY = e.deltaY;
-        
-        // Scrolling down - hide header
-        if (deltaY > 5 && !mobileHeader.classList.contains('header-hidden')) {
-            mobileHeader.classList.add('header-hidden');
-        }
-        // Scrolling up - show header
-        else if (deltaY < -5 && mobileHeader.classList.contains('header-hidden')) {
-            mobileHeader.classList.remove('header-hidden');
-        }
-    }, { passive: true });
+    // Also listen on main content specifically
+    const mainContentArea = document.querySelector('.relative.flex.flex-col.flex-1');
+    if (mainContentArea) {
+        mainContentArea.addEventListener('pointerdown', hideHeaderOnInteraction, { passive: true });
+    }
 }
 
 // ==================== INITIALIZATION ====================
