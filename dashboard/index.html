@@ -294,10 +294,10 @@ function renderSidebar() {
         <aside class="${mobileClasses} ${isMobile ? 'w-64' : widthClass} h-full flex flex-col bg-white border-r"
                style="border-color: #f0f0f0; transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1); will-change: width;"
                data-testid="sidebar">
-            <div class="logo-container pr-4 pt-4 pb-2 pl-[3.25rem] flex items-center ${isEffectivelyExpanded ? 'justify-between' : 'justify-center'}"
+            <div class="logo-container pr-4 pt-4 pb-2 pl-1 flex items-center ${isEffectivelyExpanded ? 'justify-between' : 'justify-center'}"
                  style="${isEffectivelyExpanded ? 'gap: 1.25rem;' : ''}">
                 <div class="logo-wrapper overflow-hidden transition-[max-width] duration-300 ease-out ${isEffectivelyExpanded ? 'max-w-32' : 'max-w-0'}">
-                    <img src="${logoUrl}" class="h-10 w-auto block" alt="Logo" data-testid="logo" />
+                    <img src="${logoUrl}" class="h-10 w-auto" alt="Logo" data-testid="logo" />
                 </div>
                 <button id="sidebar-toggle" 
                         data-testid="button-sidebar-toggle"
