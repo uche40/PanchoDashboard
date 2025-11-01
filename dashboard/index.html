@@ -638,6 +638,14 @@ function renderMainContent() {
     
     const finalUrlString = finalUrl.toString();
     
+    // Determine the title - use profile name if this is a profile page, otherwise use nav item label
+    let frameTitle = appSettings.messages?.ariaLabels?.contentFrame || 'Content';
+    if (match && match.navLink.label) {
+        frameTitle = match.navLink.label;
+    } else if (profile && currentHash.startsWith(profile.href) && profile.name) {
+        frameTitle = profile.name;
+    }
+    
     mainContent.innerHTML = `
         <div class="w-full h-full relative">
             <div id="iframe-loader" class="absolute inset-0 flex items-center justify-center bg-secondary/50 backdrop-blur-sm z-10">
@@ -648,7 +656,7 @@ function renderMainContent() {
                 data-testid="content-iframe"
                 src="${finalUrlString}"
                 class="w-full h-full border-none opacity-0 transition-opacity duration-300"
-                title="${match.navLink.label || appSettings.messages?.ariaLabels?.contentFrame || 'Content'}"
+                title="${frameTitle}"
                 allowfullscreen
             ></iframe>
         </div>
