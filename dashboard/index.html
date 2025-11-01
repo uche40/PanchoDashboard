@@ -311,12 +311,12 @@ function renderSidebar() {
                 ${navHtml}
             </nav>
             
-            <div class="p-2">
+            <div class="${isEffectivelyExpanded ? 'p-2' : 'px-1 pb-2'}">
                 <div id="profile-section" 
                      data-testid="profile-link"
                      data-href="${profile.href}"
                      data-iframe-url="${profile.iframeUrl || ''}"
-                     class="flex p-2 rounded-md cursor-pointer hover:bg-muted transition-colors ${isEffectivelyExpanded ? '' : 'justify-center'}"
+                     class="flex ${isEffectivelyExpanded ? 'p-2' : 'p-1.5'} rounded-md cursor-pointer hover:bg-muted transition-colors ${isEffectivelyExpanded ? '' : 'justify-center'}"
                      style="background-color: #f8f8f8;">
                     <div class="w-10 h-10 rounded-md bg-primary flex items-center justify-center flex-shrink-0">
                         <i data-lucide="${profile.icon}" class="w-6 h-6 text-primary-foreground"></i>
