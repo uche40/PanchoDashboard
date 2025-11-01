@@ -713,7 +713,10 @@ function attachSidebarEventListeners() {
     if (profileSection) {
         profileSection.addEventListener('click', () => {
             const href = profileSection.dataset.href;
+            console.log('Profile clicked, href:', href);
+            console.log('Current hash:', window.location.hash);
             window.location.hash = href;
+            console.log('New hash:', window.location.hash);
             if (isMobile) {
                 isMobileMenuOpen = false;
                 updateMobileMenu();
