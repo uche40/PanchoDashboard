@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" id="html-root">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Modern Dashboard</title>
+    <title id="page-title">Loading...</title>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
       
@@ -81,7 +81,7 @@
         <div class="relative flex flex-col flex-1 w-full min-w-0">
             <!-- Mobile header -->
             <header id="mobile-header" class="md:hidden flex items-center justify-between p-4 bg-white">
-                <button id="mobile-menu-button" data-testid="button-mobile-menu" class="p-1.5 rounded-lg bg-secondary hover:bg-muted" aria-label="Open menu">
+                <button id="mobile-menu-button" data-testid="button-mobile-menu" class="p-1.5 rounded-lg bg-secondary hover:bg-muted" aria-label="${appSettings.messages?.ariaLabels?.openMenu || 'Open menu'}">
                     <i data-lucide="menu" class="w-5 h-5"></i>
                 </button>
             </header>
@@ -148,6 +148,32 @@ function applyTheme(theme) {
     const root = document.documentElement;
     for (const [key, value] of Object.entries(theme)) {
         root.style.setProperty(`--color-${key}`, value);
+    }
+}
+
+function applyPageSettings(page) {
+    if (!page) return;
+    if (page.title) {
+        document.getElementById('page-title').textContent = page.title;
+    }
+    if (page.lang) {
+        document.getElementById('html-root').setAttribute('lang', page.lang);
+    }
+}
+
+function applyStylingSettings(styling) {
+    if (!styling) return;
+    const root = document.documentElement;
+    if (styling.fontSize) {
+        root.style.fontSize = styling.fontSize;
+    }
+    if (styling.fontFamily) {
+        document.body.style.fontFamily = styling.fontFamily;
+    }
+    if (styling.iconStrokeWidth) {
+        const style = document.createElement('style');
+        style.textContent = `.lucide { stroke-width: ${styling.iconStrokeWidth}; }`;
+        document.head.appendChild(style);
     }
 }
 
@@ -264,7 +290,7 @@ function createSubmenuHtml(item) {
 function createHeaderHtml(item) {
     return `
         <div class="px-2 mt-4 mb-2">
-            <h3 class="header-label text-xs font-medium uppercase text-muted-foreground/60 px-2 py-1.5 rounded-md transition-all duration-300 ease-out" style="letter-spacing: 0.08em; background-color: #fafafa;">
+            <h3 class="header-label text-xs font-medium uppercase text-muted-foreground/60 px-2 py-1.5 rounded-md transition-all duration-300 ease-out" style="letter-spacing: 0.08em; background-color: ${appSettings.theme?.headerBg || '#fafafa'};">
                 ${item.label}
             </h3>
         </div>`;
@@ -292,18 +318,18 @@ function renderSidebar() {
 
     sidebarContainer.innerHTML = `
         <aside class="${mobileClasses} ${isMobile ? 'w-64' : widthClass} h-full flex flex-col bg-white border-r"
-               style="border-color: #f0f0f0; transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1); will-change: width;"
+               style="border-color: ${appSettings.theme?.sidebarBorder || '#f0f0f0'}; transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1); will-change: width;"
                data-testid="sidebar">
             <div class="logo-container pr-4 pt-4 pb-2 pl-[1.25rem] flex items-center ${isEffectivelyExpanded ? 'justify-between' : 'justify-center'}"
                  style="${isEffectivelyExpanded ? 'gap: 1.25rem;' : ''}">
                 <div class="logo-wrapper overflow-hidden transition-[max-width] duration-300 ease-out ${isEffectivelyExpanded ? 'max-w-32' : 'max-w-0'}">
-                    <img src="${logoUrl}" class="h-10 w-auto block" alt="Logo" data-testid="logo" />
+                    <img src="${logoUrl}" class="h-10 w-auto block" alt="${appSettings.messages?.ariaLabels?.logo || 'Logo'}" data-testid="logo" />
                 </div>
                 <button id="sidebar-toggle" 
                         data-testid="button-sidebar-toggle"
                         class="p-1.5 rounded-md hover:bg-muted" 
-                        style="background-color: #f5f5f5;"
-                        aria-label="${isEffectivelyExpanded ? 'Collapse sidebar' : 'Expand sidebar'}">
+                        style="background-color: ${appSettings.theme?.toggleButtonBg || '#f5f5f5'};"
+                        aria-label="${isEffectivelyExpanded ? (appSettings.messages?.ariaLabels?.collapseSidebar || 'Collapse sidebar') : (appSettings.messages?.ariaLabels?.expandSidebar || 'Expand sidebar')}">
                     <i data-lucide="${isEffectivelyExpanded ? 'chevron-left' : 'chevron-right'}" class="w-5 h-5 text-secondary-foreground"></i>
                 </button>
             </div>
@@ -312,7 +338,7 @@ function renderSidebar() {
                 ${navHtml}
             </nav>
             
-            <div class="mt-auto border-t" style="border-color: #f0f0f0;">
+            <div class="mt-auto border-t" style="border-color: ${appSettings.theme?.sidebarBorder || '#f0f0f0'};">
                 <div id="profile-section" 
                      data-testid="profile-link"
                      data-href="${profile.href}"
@@ -320,7 +346,7 @@ function renderSidebar() {
                      class="flex items-center ${isEffectivelyExpanded ? 'p-4' : 'p-3 justify-center'} cursor-pointer transition-all duration-200 hover:bg-secondary/50"
                      style="transition: all 200ms ease; ${isEffectivelyExpanded ? 'gap: 1.25rem;' : ''}">
                     <div class="flex-shrink-0">
-                        <div class="w-10 h-10 rounded-md flex items-center justify-center" style="background-color: #f5f5f5;">
+                        <div class="w-10 h-10 rounded-md flex items-center justify-center" style="background-color: ${appSettings.theme?.toggleButtonBg || '#f5f5f5'};">
                             <i data-lucide="${profile.icon}" class="w-5 h-5 text-secondary-foreground"></i>
                         </div>
                     </div>
@@ -405,11 +431,12 @@ function renderMainContent() {
     const match = findNavItemByHref(navItems, targetHash);
     
     if (!match || !match.navLink.iframeUrl) {
+        const messages = appSettings.messages?.welcome || {};
         mainContent.innerHTML = `
             <div class="p-8" data-testid="welcome-screen">
-                <h1 class="text-3xl font-bold text-primary">Welcome to your Dashboard</h1>
-                <p class="mt-4 text-muted-foreground">Select a menu item to view its content.</p>
-                <p class="mt-2 text-sm text-muted-foreground">Current route: <code>${currentHash}</code></p>
+                <h1 class="text-3xl font-bold text-primary">${messages.title || 'Welcome to your Dashboard'}</h1>
+                <p class="mt-4 text-muted-foreground">${messages.subtitle || 'Select a menu item to view its content.'}</p>
+                <p class="mt-2 text-sm text-muted-foreground">${messages.currentRoute || 'Current route:'} <code>${currentHash}</code></p>
             </div>
         `;
         return;
@@ -424,7 +451,8 @@ function renderMainContent() {
     try {
         finalUrl = new URL(iframeUrl, window.location.origin);
     } catch (error) {
-        showSecurityError('The configured iframe URL is invalid.');
+        const errorMsg = appSettings.messages?.errors?.invalidUrl || 'The configured iframe URL is invalid.';
+        showSecurityError(errorMsg);
         return;
     }
     
@@ -436,7 +464,8 @@ function renderMainContent() {
         );
         
         if (!isAllowed) {
-            showSecurityError('For security reasons, only content from configured domains can be displayed.');
+            const errorMsg = appSettings.messages?.errors?.domainNotAllowed || 'For security reasons, only content from configured domains can be displayed.';
+            showSecurityError(errorMsg);
             return;
         }
     }
@@ -465,7 +494,7 @@ function renderMainContent() {
                 data-testid="content-iframe"
                 src="${finalUrlString}"
                 class="w-full h-full border-none opacity-0 transition-opacity duration-300"
-                title="${match.navLink.label || 'Content'}"
+                title="${match.navLink.label || appSettings.messages?.ariaLabels?.contentFrame || 'Content'}"
                 allowfullscreen
             ></iframe>
         </div>
@@ -621,6 +650,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const settings = await fetchSettings();
         appSettings = processURLOverrides(settings);
 
+        applyPageSettings(appSettings.page);
+        applyStylingSettings(appSettings.styling);
         applyTheme(appSettings.theme);
         
         if (!isMobile) {
