@@ -99,6 +99,49 @@
         scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
       }
       
+      /* Badge styling - small pill shape with 5px border radius */
+      .menu-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.125rem 0.5rem;
+        font-size: 0.6875rem;
+        font-weight: 500;
+        line-height: 1.25;
+        border-radius: 5px;
+        white-space: nowrap;
+        transition: opacity 200ms ease-out;
+      }
+      
+      .badge-primary {
+        background-color: hsl(var(--color-primary));
+        color: hsl(var(--color-primary-foreground));
+      }
+      
+      .badge-secondary {
+        background-color: hsl(var(--color-muted));
+        color: hsl(var(--color-muted-foreground));
+      }
+      
+      .badge-success {
+        background-color: hsl(142, 71%, 45%);
+        color: white;
+      }
+      
+      .badge-warning {
+        background-color: hsl(38, 92%, 50%);
+        color: white;
+      }
+      
+      .badge-danger {
+        background-color: hsl(0, 84%, 60%);
+        color: white;
+      }
+      
+      .badge-info {
+        background-color: hsl(199, 89%, 48%);
+        color: white;
+      }
+      
       /* Mobile header transparent with hide/show animation */
       @media (max-width: 767px) {
         #mobile-header {
@@ -328,6 +371,8 @@ function createLinkHtml(item, isInSubmenu = false) {
     const sizeClasses = isInSubmenu ? 'text-sm p-2 my-0.5' : 'p-2 my-2.5';
     const iconSize = isInSubmenu ? 16 : 20;
     
+    const badgeHtml = item.badge ? `<span class="menu-badge badge-${item.badge.variant || 'primary'} ml-auto" data-testid="badge-${item.label.toLowerCase().replace(/\s+/g, '-')}">${item.badge.text}</span>` : '';
+    
     return `
         <a href="${item.href}" 
            data-testid="link-${item.label.toLowerCase().replace(/\s+/g, '-')}"
@@ -335,6 +380,7 @@ function createLinkHtml(item, isInSubmenu = false) {
             ${isInSubmenu ? `<div class="absolute left-0 h-full w-0.5 ${isActive ? 'bg-primary' : ''}"></div>` : ''}
             <i data-lucide="${item.icon}" class="w-${iconSize/4} h-${iconSize/4} flex-shrink-0 ${isInSubmenu ? 'mr-3' : ''}"></i>
             <span class="link-label whitespace-nowrap ${isInSubmenu ? '' : 'ml-3'} transition-opacity duration-200 ease-out">${item.label}</span>
+            ${badgeHtml}
             
             ${!isInSubmenu ? `<div class="tooltip absolute left-full rounded-md px-2 py-1 ml-2 bg-primary text-primary-foreground text-sm invisible opacity-20 -translate-x-3 transition-all group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 z-10 whitespace-nowrap">
                 ${item.label}
@@ -355,6 +401,8 @@ function createSubmenuHtml(item) {
         childrenHtml += createLinkHtml(child, true);
     });
     
+    const badgeHtml = item.badge ? `<span class="menu-badge badge-${item.badge.variant || 'primary'} mr-1" data-testid="badge-${item.path}">${item.badge.text}</span>` : '';
+    
     return `
         <div class="submenu-container">
             <div data-submenu-path="${item.path}" 
@@ -362,6 +410,7 @@ function createSubmenuHtml(item) {
                  class="submenu-toggle relative flex items-center p-2 my-2.5 font-normal rounded-md cursor-pointer transition-colors group ${isChildActive ? 'text-primary' : 'hover:bg-muted text-secondary-foreground\/80 hover:text-secondary-foreground'}">
                 <i data-lucide="${item.icon}" class="w-5 h-5 flex-shrink-0"></i>
                 <span class="submenu-label flex-1 whitespace-nowrap ml-3 transition-opacity duration-200 ease-out">${item.label}</span>
+                ${badgeHtml}
                 <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 ml-auto ${isOpen ? 'rotated' : ''}" style="display: none;"></i>
                 
                 <div class="tooltip absolute left-full rounded-md px-2 py-1 ml-2 bg-primary text-primary-foreground text-sm invisible opacity-20 -translate-x-3 transition-all group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 z-10 whitespace-nowrap">
@@ -471,6 +520,11 @@ function updateSidebarVisibility() {
                 label.classList.add('max-w-0');
             }
         }
+    });
+    
+    const badges = sidebarContainer.querySelectorAll('.menu-badge');
+    badges.forEach(badge => {
+        badge.style.opacity = isEffectivelyExpanded ? '1' : '0';
     });
     
     const chevrons = sidebarContainer.querySelectorAll('.chevron-icon');

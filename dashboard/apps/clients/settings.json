@@ -21,7 +21,11 @@
         "href": "#/templates.html",
         "label": "Browse Templates",
         "icon": "layout-grid",
-        "iframeUrl": "https://mypancho.com/cms/products"
+        "iframeUrl": "https://mypancho.com/cms/products",
+        "badge": {
+          "text": "Hot",
+          "variant": "danger"
+        }
       },
       {
         "type": "link",
@@ -68,6 +72,10 @@
         "path": "manage-billing",
         "label": "Manage Billing",
         "icon": "wallet",
+        "badge": {
+          "text": "Due",
+          "variant": "warning"
+        },
         "children": [
           {
             "type": "link",

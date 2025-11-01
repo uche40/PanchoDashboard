@@ -21,7 +21,11 @@
         "href": "#/templates.html",
         "label": "Browse Templates",
         "icon": "layout-grid",
-        "iframeUrl": "https://mypancho.com/cms/products"
+        "iframeUrl": "https://mypancho.com/cms/products",
+        "badge": {
+          "text": "New",
+          "variant": "success"
+        }
       },
       {
         "type": "link",
@@ -109,6 +113,10 @@
         "path": "support",
         "label": "Support",
         "icon": "headset",
+        "badge": {
+          "text": "3",
+          "variant": "danger"
+        },
         "children": [
           {
             "type": "link",
@@ -194,7 +202,11 @@
             "href": "#/announcements.html",
             "label": "Announcements",
             "icon": "megaphone",
-            "iframeUrl": "https://mypancho.com/account/announcements"
+            "iframeUrl": "https://mypancho.com/account/announcements",
+            "badge": {
+              "text": "2",
+              "variant": "warning"
+            }
           },
           {
             "type": "link",
