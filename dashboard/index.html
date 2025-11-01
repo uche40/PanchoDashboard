@@ -290,7 +290,7 @@ function renderSidebar() {
 
     sidebarContainer.innerHTML = `
         <aside class="${mobileClasses} ${isMobile ? 'w-64' : widthClass} h-full flex flex-col bg-white transition-[width] duration-300 ease-out overflow-x-hidden border-r"
-               style="border-color: hsl(var(--color-border) / 0.15);"
+               style="border-color: #f0f0f0;"
                data-testid="sidebar">
             <div class="logo-container p-4 pb-2 flex items-center ${isEffectivelyExpanded ? 'justify-between' : 'justify-center'}">
                 <div class="logo-wrapper overflow-hidden transition-[max-width] duration-300 ease-out ${isEffectivelyExpanded ? 'max-w-32' : 'max-w-0'}">
@@ -298,7 +298,8 @@ function renderSidebar() {
                 </div>
                 <button id="sidebar-toggle" 
                         data-testid="button-sidebar-toggle"
-                        class="p-1.5 rounded-lg bg-secondary hover:bg-muted" 
+                        class="p-1.5 rounded-md hover:bg-muted" 
+                        style="background-color: #f5f5f5;"
                         aria-label="${isEffectivelyExpanded ? 'Collapse sidebar' : 'Expand sidebar'}">
                     <i data-lucide="${isEffectivelyExpanded ? 'chevron-left' : 'chevron-right'}" class="w-5 h-5 text-secondary-foreground"></i>
                 </button>
@@ -312,7 +313,8 @@ function renderSidebar() {
                  data-testid="profile-link"
                  data-href="${profile.href}"
                  data-iframe-url="${profile.iframeUrl || ''}"
-                 class="flex p-3 cursor-pointer hover:bg-muted">
+                 class="flex p-3 m-2 rounded-md cursor-pointer hover:bg-muted"
+                 style="background-color: #f8f8f8;">
                 <div class="w-10 h-10 rounded-md bg-primary flex items-center justify-center flex-shrink-0">
                     <i data-lucide="${profile.icon}" class="w-6 h-6 text-primary-foreground"></i>
                 </div>
