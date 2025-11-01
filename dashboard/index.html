@@ -99,17 +99,18 @@
         scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
       }
       
-      /* Mobile header transparent with content behind */
-      #mobile-header {
-        background: transparent;
-        position: relative;
-        z-index: 20;
-      }
-      
-      /* Main content extends behind mobile header */
+      /* Mobile header transparent and positioned at top of scroll */
       @media (max-width: 767px) {
-        #main-content {
-          margin-top: -56px;
+        .mobile-scroll-container {
+          position: relative;
+        }
+        #mobile-header {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          background: transparent;
+          z-index: 20;
         }
       }
       
@@ -571,15 +572,16 @@ function renderMainContent() {
     const finalUrlString = finalUrl.toString();
     
     mainContent.innerHTML = `
-        <div class="w-full h-full relative">
-            <div id="iframe-loader" class="absolute inset-0 flex items-center justify-center bg-secondary/50 backdrop-blur-sm z-10">
+        <div class="w-full relative mobile-scroll-container" style="min-height: 200vh;">
+            <div id="iframe-loader" class="absolute inset-0 flex items-center justify-center bg-secondary/50 backdrop-blur-sm z-10" style="height: 100vh;">
                 <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
             </div>
             <iframe
                 id="content-iframe"
                 data-testid="content-iframe"
                 src="${finalUrlString}"
-                class="w-full h-full border-none opacity-0 transition-opacity duration-300"
+                class="w-full border-none opacity-0 transition-opacity duration-300"
+                style="height: 200vh;"
                 title="${match.navLink.label || appSettings.messages?.ariaLabels?.contentFrame || 'Content'}"
                 allowfullscreen
             ></iframe>
