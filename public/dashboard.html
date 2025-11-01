@@ -279,7 +279,7 @@ function renderSidebar() {
         : 'hidden md:flex';
 
     sidebarContainer.innerHTML = `
-        <aside class="${mobileClasses} ${isMobile ? 'w-64' : widthClass} h-full flex-col bg-white border-r border-border shadow-sm transition-[width] duration-300 ease-out overflow-x-hidden"
+        <aside class="${mobileClasses} ${isMobile ? 'w-64' : widthClass} h-full flex flex-col bg-white border-r border-border shadow-sm transition-[width] duration-300 ease-out overflow-x-hidden"
                data-testid="sidebar">
             <div class="logo-container p-4 pb-2 flex items-center ${isEffectivelyExpanded ? 'justify-between' : 'justify-center'}">
                 <div class="logo-wrapper overflow-hidden transition-[max-width] duration-300 ease-out ${isEffectivelyExpanded ? 'max-w-32' : 'max-w-0'}">
