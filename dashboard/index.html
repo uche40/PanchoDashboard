@@ -573,7 +573,21 @@ function renderMainContent() {
     const targetHash = currentHash === '#/' ? defaultHref : currentHash;
     const match = findNavItemByHref(navItems, targetHash);
     
-    if (!match || !match.navLink.iframeUrl) {
+    // Check if this matches the profile section
+    const profile = appSettings.sidebar.profile;
+    let iframeUrl = null;
+    let remainingPart = '';
+    
+    if (match && match.navLink.iframeUrl) {
+        iframeUrl = match.navLink.iframeUrl;
+        remainingPart = match.remainingPart;
+    } else if (profile && currentHash.startsWith(profile.href)) {
+        // Check if the current hash matches the profile href
+        iframeUrl = profile.iframeUrl;
+        remainingPart = currentHash.substring(profile.href.length);
+    }
+    
+    if (!iframeUrl) {
         const messages = appSettings.messages?.welcome || {};
         mainContent.innerHTML = `
             <div class="p-8" data-testid="welcome-screen">
@@ -584,9 +598,6 @@ function renderMainContent() {
         `;
         return;
     }
-
-    const iframeUrl = match.navLink.iframeUrl;
-    const remainingPart = match.remainingPart;
     
     const allowedDomains = appSettings.security?.allowedIframeDomains || [];
     let finalUrl;

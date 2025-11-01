@@ -210,8 +210,8 @@
     "logoUrl": "https://mypancho.com/account/assets/img/logo.png",
     "profile": {
       "href": "#/my-account-settings.html",
-      "name": "Profile",
-      "role": "Account Settings",
+      "name": "My Profile",
+      "role": "My Account Settings",
       "icon": "user-circle",
       "iframeUrl": "https://mypancho.com/account/user/profile"
     },
