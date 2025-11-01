@@ -27,6 +27,11 @@
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
       }
       
+      /* Softer icon strokes */
+      .lucide {
+        stroke-width: 1.5;
+      }
+      
       /* Smooth height animation for submenus */
       .submenu-children {
         overflow: hidden;
@@ -212,7 +217,7 @@ function createLinkHtml(item, isInSubmenu = false) {
     return `
         <a href="${item.href}" 
            data-testid="link-${item.label.toLowerCase().replace(/\s+/g, '-')}"
-           class="nav-link relative flex items-center ${sizeClasses} font-medium rounded-md cursor-pointer transition-colors group ${isActive ? activeClasses : defaultClasses}">
+           class="nav-link relative flex items-center ${sizeClasses} font-normal rounded-md cursor-pointer transition-colors group ${isActive ? activeClasses : defaultClasses}">
             ${isInSubmenu ? `<div class="absolute left-0 h-full w-0.5 ${isActive ? 'bg-primary' : ''}"></div>` : ''}
             <i data-lucide="${item.icon}" class="w-${iconSize/4} h-${iconSize/4} flex-shrink-0 ${isInSubmenu ? 'mr-3' : ''}"></i>
             <span class="link-label whitespace-nowrap ${isInSubmenu ? '' : 'ml-3'} transition-opacity duration-200 ease-out">${item.label}</span>
@@ -240,7 +245,7 @@ function createSubmenuHtml(item) {
         <div class="submenu-container">
             <div data-submenu-path="${item.path}" 
                  data-testid="submenu-${item.path}"
-                 class="submenu-toggle relative flex items-center p-2 my-2.5 font-medium rounded-md cursor-pointer transition-colors group ${isChildActive ? 'text-primary' : 'hover:bg-muted text-secondary-foreground\/80 hover:text-secondary-foreground'}">
+                 class="submenu-toggle relative flex items-center p-2 my-2.5 font-normal rounded-md cursor-pointer transition-colors group ${isChildActive ? 'text-primary' : 'hover:bg-muted text-secondary-foreground\/80 hover:text-secondary-foreground'}">
                 <i data-lucide="${item.icon}" class="w-5 h-5 flex-shrink-0"></i>
                 <span class="submenu-label flex-1 whitespace-nowrap ml-3 transition-opacity duration-200 ease-out">${item.label}</span>
                 <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 ml-auto ${isOpen ? 'rotated' : ''}" style="display: none;"></i>
@@ -258,7 +263,7 @@ function createSubmenuHtml(item) {
 
 function createHeaderHtml(item) {
     return `
-        <h3 class="header-label text-xs font-semibold uppercase text-muted-foreground pl-3 mt-4 mb-2 transition-all duration-300 ease-out">
+        <h3 class="header-label text-xs font-medium uppercase text-muted-foreground/60 pl-3 mt-4 mb-2 transition-all duration-300 ease-out" style="letter-spacing: 0.08em;">
             ${item.label}
         </h3>`;
 }
@@ -284,8 +289,8 @@ function renderSidebar() {
         : 'hidden md:flex';
 
     sidebarContainer.innerHTML = `
-        <aside class="${mobileClasses} ${isMobile ? 'w-64' : widthClass} h-full flex flex-col bg-white transition-[width] duration-300 ease-out overflow-x-hidden border-r border-border/40"
-               style="border-color: hsl(var(--color-border) / 0.4);"
+        <aside class="${mobileClasses} ${isMobile ? 'w-64' : widthClass} h-full flex flex-col bg-white transition-[width] duration-300 ease-out overflow-x-hidden border-r"
+               style="border-color: hsl(var(--color-border) / 0.15);"
                data-testid="sidebar">
             <div class="logo-container p-4 pb-2 flex items-center ${isEffectivelyExpanded ? 'justify-between' : 'justify-center'}">
                 <div class="logo-wrapper overflow-hidden transition-[max-width] duration-300 ease-out ${isEffectivelyExpanded ? 'max-w-32' : 'max-w-0'}">
@@ -313,7 +318,7 @@ function renderSidebar() {
                 </div>
                 <div class="profile-info flex-1 ml-3 min-w-0 transition-opacity duration-200 ease-out ${isEffectivelyExpanded ? 'opacity-100' : 'opacity-0'}">
                     <div class="leading-4 whitespace-nowrap">
-                        <h4 class="font-semibold text-sm text-primary whitespace-nowrap">${profile.name}</h4>
+                        <h4 class="font-medium text-sm text-primary whitespace-nowrap">${profile.name}</h4>
                         <span class="text-xs text-muted-foreground whitespace-nowrap">${profile.role}</span>
                     </div>
                 </div>
