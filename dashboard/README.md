@@ -25,24 +25,103 @@ The dashboard can load different configurations based on a URL parameter, allowi
 - **Specific app**: `https://mypancho.com/?app=partners` → Loads `apps/partners/settings.json`
 - **Another app**: `https://mypancho.com/?app=clients` → Loads `apps/clients/settings.json`
 
-### Creating a New App
+### Smart Settings Override System
 
-1. Create a new folder in `apps/`: `apps/your-app-name/`
-2. Copy `apps/partners/settings.json` to your new folder
-3. Customize the settings for your new app
-4. Access it via: `?app=your-app-name`
+**New!** The dashboard now uses a smart settings loading system that eliminates duplication:
 
-Example:
+1. **Default Settings** (`default-settings.json`) - Contains all common settings shared across apps
+2. **App-Specific Settings** (`apps/{app-name}/settings.json`) - Only what's unique to that app
+3. **Intelligent Merging** - Automatically combines default + app-specific settings
+
+#### Benefits
+- ✅ **No Duplication** - Define common settings once
+- ✅ **Minimal Files** - App settings are 5-20 lines instead of 275+
+- ✅ **Easy Updates** - Change common menus in one place
+- ✅ **Scalable** - Manage 200+ apps efficiently
+
+#### Creating a New App (Simple)
+
+**Option 1: Use all defaults**
 ```bash
-# Create a new app called "clients"
-cd dashboard/apps
-mkdir clients
-cp partners/settings.json clients/settings.json
+mkdir -p dashboard/apps/myapp
+echo '{}' > dashboard/apps/myapp/settings.json
+```
+Then visit: `?app=myapp`
 
-# Edit clients/settings.json with your custom navigation, branding, etc.
+**Option 2: Custom title only**
+```bash
+mkdir -p dashboard/apps/myapp
+cat > dashboard/apps/myapp/settings.json << 'EOF'
+{
+  "page": {
+    "title": "My App Dashboard"
+  }
+}
+EOF
 ```
 
-Then visit: `https://mypancho.com/?app=clients`
+**Option 3: Add custom menu item**
+```bash
+mkdir -p dashboard/apps/myapp
+cat > dashboard/apps/myapp/settings.json << 'EOF'
+{
+  "page": {
+    "title": "My App"
+  },
+  "sidebar": {
+    "navItems": [
+      {
+        "_position": "before",
+        "type": "link",
+        "href": "#/special.html",
+        "label": "Special Feature",
+        "icon": "zap",
+        "iframeUrl": "https://example.com/special"
+      }
+    ]
+  }
+}
+EOF
+```
+
+#### Override Features
+
+**Override a menu item:**
+```json
+{
+  "sidebar": {
+    "navItems": [
+      {
+        "_override": "label",
+        "type": "link",
+        "href": "#/index.html",
+        "label": "Custom Home",
+        "icon": "home",
+        "iframeUrl": "https://example.com/home"
+      }
+    ]
+  }
+}
+```
+
+**Add menu item at beginning:**
+```json
+{
+  "sidebar": {
+    "navItems": [
+      {
+        "_position": "before",
+        "type": "link",
+        "href": "#/priority.html",
+        "label": "Priority Item",
+        "icon": "star"
+      }
+    ]
+  }
+}
+```
+
+**See `SETTINGS-OVERRIDE-GUIDE.md` for complete documentation and examples.**
 
 ## Deep Linking & Parameter Passing
 
