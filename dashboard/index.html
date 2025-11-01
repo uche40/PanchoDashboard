@@ -732,34 +732,38 @@ function handleResize() {
 
 // ==================== MOBILE HEADER CONTROLLER ====================
 
+let isHeaderVisible = true;
+
 function initMobileHeaderGestures() {
     if (!isMobile) return;
     
     const mobileHeader = document.getElementById('mobile-header');
-    if (!mobileHeader) return;
-    
-    // Simple approach: Tap the content area once to toggle header visibility
-    let isHeaderVisible = true;
-    
-    const mainContent = document.getElementById('main-content');
-    if (mainContent) {
-        mainContent.addEventListener('click', (e) => {
-            // Toggle header visibility
-            if (isHeaderVisible) {
-                mobileHeader.classList.add('header-hidden');
-            } else {
-                mobileHeader.classList.remove('header-hidden');
-            }
-            isHeaderVisible = !isHeaderVisible;
-        }, { passive: true });
+    if (!mobileHeader) {
+        console.warn('Mobile header element not found');
+        return;
     }
     
-    // Clicking the header itself always shows it
-    mobileHeader.addEventListener('click', (e) => {
-        e.stopPropagation();
-        mobileHeader.classList.remove('header-hidden');
-        isHeaderVisible = true;
-    });
+    console.log('Mobile header gestures initialized');
+    
+    // Listen on the entire document for any tap
+    document.addEventListener('touchstart', (e) => {
+        // Check if the touch is on the header itself
+        if (mobileHeader.contains(e.target)) {
+            console.log('Touch on header - showing');
+            mobileHeader.classList.remove('header-hidden');
+            isHeaderVisible = true;
+            return;
+        }
+        
+        // Touch anywhere else - toggle
+        console.log('Touch on content - toggling', isHeaderVisible);
+        if (isHeaderVisible) {
+            mobileHeader.classList.add('header-hidden');
+        } else {
+            mobileHeader.classList.remove('header-hidden');
+        }
+        isHeaderVisible = !isHeaderVisible;
+    }, { passive: true });
 }
 
 // ==================== INITIALIZATION ====================
