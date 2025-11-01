@@ -99,9 +99,18 @@
         scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
       }
       
-      /* Mobile header transparent */
+      /* Mobile header transparent with content behind */
       #mobile-header {
         background: transparent;
+        position: relative;
+        z-index: 20;
+      }
+      
+      /* Main content extends behind mobile header */
+      @media (max-width: 767px) {
+        #main-content {
+          margin-top: -56px;
+        }
       }
       
       /* Utility classes for colors */
