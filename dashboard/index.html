@@ -50,6 +50,33 @@
         transform: rotate(180deg);
       }
       
+      /* Header visibility when sidebar is collapsed */
+      aside:not(:hover) .header-container {
+        margin-top: 0.75rem;
+        margin-bottom: 0.75rem;
+      }
+      aside:not(:hover) .header-label {
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+      aside:not(:hover) .header-divider {
+        opacity: 1 !important;
+      }
+      
+      /* Header visibility when expanded or hovering */
+      aside:hover .header-label,
+      aside.sidebar-expanded .header-label {
+        opacity: 1;
+        max-height: 100px;
+      }
+      aside:hover .header-divider,
+      aside.sidebar-expanded .header-divider {
+        opacity: 0 !important;
+      }
+      
       /* Utility classes for colors */
       .bg-secondary { background-color: hsl(var(--color-secondary)); }
       .bg-white { background-color: white; }
@@ -289,10 +316,11 @@ function createSubmenuHtml(item) {
 
 function createHeaderHtml(item) {
     return `
-        <div class="px-2 mt-4 mb-2">
+        <div class="header-container px-2 mt-4 mb-2 transition-all duration-300 ease-out">
             <h3 class="header-label text-xs font-medium uppercase text-muted-foreground/60 px-2 py-1.5 rounded-md transition-all duration-300 ease-out" style="letter-spacing: 0.08em; background-color: ${appSettings.theme?.headerBg || '#fafafa'};">
                 ${item.label}
             </h3>
+            <div class="header-divider w-8 h-px mx-auto my-2 transition-opacity duration-300 ease-out" style="background-color: ${appSettings.theme?.sidebarBorder || '#e5e5e5'}; opacity: 0;"></div>
         </div>`;
 }
 
@@ -317,7 +345,7 @@ function renderSidebar() {
         : 'hidden md:flex';
 
     sidebarContainer.innerHTML = `
-        <aside class="${mobileClasses} ${isMobile ? 'w-64' : widthClass} h-full flex flex-col bg-white border-r"
+        <aside class="${mobileClasses} ${isMobile ? 'w-64' : widthClass} ${isEffectivelyExpanded ? 'sidebar-expanded' : ''} h-full flex flex-col bg-white border-r"
                style="border-color: ${appSettings.theme?.sidebarBorder || '#f0f0f0'}; transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1); will-change: width;"
                data-testid="sidebar">
             <div class="logo-container pr-4 pt-4 pb-2 pl-[1.25rem] flex items-center ${isEffectivelyExpanded ? 'justify-between' : 'justify-center'}"
