@@ -1,14 +1,14 @@
 {
   "_comment": "Example App - Showcases all override system features",
   "_comment_features": "This example demonstrates: custom title, logo override, menu item override, position control, custom menu items, theme customization, and submenu override",
-  
+
   "page": {
     "title": "Example App Dashboard"
   },
 
   "sidebar": {
     "logoUrl": "https://mypancho.com/account/assets/img/logo.png",
-    
+
     "navItems": [
       {
         "_position": "before",
@@ -96,7 +96,7 @@
   "theme": {
     "_comment": "Only override the colors you want to change",
     "primary": "hsl(280, 70%, 60%)",
-    "headerBg": "#f5f0ff"
+    "headerBg": "#80a3ff"
   },
 
   "messages": {
