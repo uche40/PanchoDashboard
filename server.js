@@ -18,7 +18,12 @@ const mimeTypes = {
 };
 
 const server = http.createServer((req, res) => {
-  let filePath = path.join(DASHBOARD_DIR, req.url === '/' ? 'index.html' : req.url);
+  // Parse URL to remove query string
+  const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
+  const pathname = parsedUrl.pathname;
+  
+  // Determine file path (serve index.html for root)
+  let filePath = path.join(DASHBOARD_DIR, pathname === '/' ? 'index.html' : pathname);
   const ext = path.extname(filePath);
   const contentType = mimeTypes[ext] || 'application/octet-stream';
 
