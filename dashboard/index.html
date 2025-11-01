@@ -78,7 +78,7 @@
         <div id="mobile-backdrop" class="fixed inset-0 bg-black/30 z-30 transition-opacity duration-300 opacity-0 pointer-events-none md:hidden" aria-hidden="true"></div>
 
         <!-- Main content area -->
-        <div class="relative flex flex-col flex-1 w-full min-w-0">
+        <div class="relative flex flex-col flex-1 w-full min-w-0 transition-all duration-300 ease-out">
             <!-- Mobile header -->
             <header id="mobile-header" class="md:hidden flex items-center justify-between p-4 bg-white">
                 <button id="mobile-menu-button" data-testid="button-mobile-menu" class="p-1.5 rounded-lg bg-secondary hover:bg-muted" aria-label="Open menu">
@@ -263,9 +263,11 @@ function createSubmenuHtml(item) {
 
 function createHeaderHtml(item) {
     return `
-        <h3 class="header-label text-xs font-medium uppercase text-muted-foreground/60 pl-3 mt-4 mb-2 transition-all duration-300 ease-out" style="letter-spacing: 0.08em;">
-            ${item.label}
-        </h3>`;
+        <div class="px-2 mt-4 mb-2">
+            <h3 class="header-label text-xs font-medium uppercase text-muted-foreground/60 px-2 py-1.5 rounded-md transition-all duration-300 ease-out" style="letter-spacing: 0.08em; background-color: #fafafa;">
+                ${item.label}
+            </h3>
+        </div>`;
 }
 
 function renderSidebar() {
@@ -309,19 +311,21 @@ function renderSidebar() {
                 ${navHtml}
             </nav>
             
-            <div id="profile-section" 
-                 data-testid="profile-link"
-                 data-href="${profile.href}"
-                 data-iframe-url="${profile.iframeUrl || ''}"
-                 class="flex p-3 m-2 rounded-md cursor-pointer hover:bg-muted"
-                 style="background-color: #f8f8f8;">
-                <div class="w-10 h-10 rounded-md bg-primary flex items-center justify-center flex-shrink-0">
-                    <i data-lucide="${profile.icon}" class="w-6 h-6 text-primary-foreground"></i>
-                </div>
-                <div class="profile-info flex-1 ml-3 min-w-0 transition-opacity duration-200 ease-out ${isEffectivelyExpanded ? 'opacity-100' : 'opacity-0'}">
-                    <div class="leading-4 whitespace-nowrap">
-                        <h4 class="font-medium text-sm text-primary whitespace-nowrap">${profile.name}</h4>
-                        <span class="text-xs text-muted-foreground whitespace-nowrap">${profile.role}</span>
+            <div class="px-2 pb-2">
+                <div id="profile-section" 
+                     data-testid="profile-link"
+                     data-href="${profile.href}"
+                     data-iframe-url="${profile.iframeUrl || ''}"
+                     class="flex p-2 rounded-md cursor-pointer hover:bg-muted transition-colors"
+                     style="background-color: #f8f8f8;">
+                    <div class="w-10 h-10 rounded-md bg-primary flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="${profile.icon}" class="w-6 h-6 text-primary-foreground"></i>
+                    </div>
+                    <div class="profile-info flex-1 ml-3 min-w-0 transition-opacity duration-200 ease-out ${isEffectivelyExpanded ? 'opacity-100' : 'opacity-0'}">
+                        <div class="leading-4 whitespace-nowrap">
+                            <h4 class="font-medium text-sm text-primary whitespace-nowrap">${profile.name}</h4>
+                            <span class="text-xs text-muted-foreground whitespace-nowrap">${profile.role}</span>
+                        </div>
                     </div>
                 </div>
             </div>
