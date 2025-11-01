@@ -317,7 +317,7 @@ function renderSidebar() {
                      data-href="${profile.href}"
                      data-iframe-url="${profile.iframeUrl || ''}"
                      class="flex items-center ${isEffectivelyExpanded ? 'p-4' : 'p-3 justify-center'} cursor-pointer transition-all duration-200 hover:bg-secondary/50"
-                     style="transition: all 200ms ease; ${isEffectivelyExpanded ? 'gap: 2.25rem;' : ''}">
+                     style="transition: all 200ms ease; ${isEffectivelyExpanded ? 'gap: 1.25rem;' : ''}">
                     <div class="flex-shrink-0">
                         <div class="w-10 h-10 rounded-md flex items-center justify-center" style="background-color: #f5f5f5;">
                             <i data-lucide="${profile.icon}" class="w-5 h-5 text-secondary-foreground"></i>
@@ -376,6 +376,12 @@ function updateSidebarVisibility() {
             children.style.display = 'block';
         }
     });
+    
+    // Update profile section gap
+    const profileSection = document.getElementById('profile-section');
+    if (profileSection) {
+        profileSection.style.gap = isEffectivelyExpanded ? '1.25rem' : '0';
+    }
     
     const aside = sidebarContainer.querySelector('aside');
     if (aside && !isMobile) {
