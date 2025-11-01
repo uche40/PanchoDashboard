@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modern Dashboard</title>
+    <style>
+      :root {
+        --color-primary: 220 13% 61%;
+        --color-primary-foreground: 210 40% 98%;
+        --color-secondary: 210 40% 96.1%;
+        --color-secondary-foreground: 222.2 84% 4.9%;
+        --color-muted: 210 40% 96.1%;
+        --color-muted-foreground: 215.4 16.3% 46.9%;
+        --color-border: 214.3 31.8% 91.4%;
+      }
+      html {
+        font-size: 13.8px;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      
+      /* Smooth height animation for submenus */
+      .submenu-children {
+        overflow: hidden;
+        transition: height 0.2s ease-out, opacity 0.2s ease-out;
+      }
+      .submenu-children.collapsed {
+        height: 0 !important;
+        opacity: 0;
+      }
+      
+      /* Chevron rotation animation */
+      .chevron-icon {
+        transition: transform 0.2s ease-out;
+      }
+      .chevron-icon.rotated {
+        transform: rotate(180deg);
+      }
+      
+      /* Utility classes for colors */
+      .bg-secondary { background-color: hsl(var(--color-secondary)); }
+      .bg-white { background-color: white; }
+      .bg-muted { background-color: hsl(var(--color-muted)); }
+      .bg-primary { background-color: hsl(var(--color-primary)); }
+      .bg-primary\/10 { background-color: hsl(var(--color-primary) / 0.1); }
+      .text-primary { color: hsl(var(--color-primary)); }
+      .text-primary-foreground { color: hsl(var(--color-primary-foreground)); }
+      .text-secondary-foreground { color: hsl(var(--color-secondary-foreground)); }
+      .text-secondary-foreground\/70 { color: hsl(var(--color-secondary-foreground) / 0.7); }
+      .text-secondary-foreground\/80 { color: hsl(var(--color-secondary-foreground) / 0.8); }
+      .text-muted-foreground { color: hsl(var(--color-muted-foreground)); }
+      .text-red-500 { color: rgb(239, 68, 68); }
+      .text-red-600 { color: rgb(220, 38, 38); }
+      .border-border { border-color: hsl(var(--color-border)); }
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-secondary">
+    <div id="app-container" class="flex h-screen bg-secondary overflow-hidden">
+        <!-- Sidebar container (desktop and mobile) -->
+        <aside id="sidebar-container"></aside>
+        
+        <!-- Mobile backdrop -->
+        <div id="mobile-backdrop" class="fixed inset-0 bg-black/30 z-30 transition-opacity duration-300 opacity-0 pointer-events-none md:hidden" aria-hidden="true"></div>
+
+        <!-- Main content area -->
+        <div class="relative flex flex-col flex-1 w-full min-w-0">
+            <!-- Mobile header -->
+            <header id="mobile-header" class="md:hidden flex items-center justify-between p-4 bg-white border-b border-border">
+                <button id="mobile-menu-button" data-testid="button-mobile-menu" class="p-1.5 rounded-lg bg-secondary hover:bg-muted" aria-label="Open menu">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+                </button>
+            </header>
+
+            <!-- Main content -->
+            <main id="main-content" class="flex-1 overflow-y-auto"></main>
+        </div>
+    </div>
+
+    <script>
+// ==================== EMBEDDED SETTINGS ====================
+const EMBEDDED_SETTINGS = {"theme":{"primary":"hsl(220, 13%, 61%)","primary-foreground":"hsl(210, 40%, 98%)","secondary":"hsl(210, 40%, 96.1%)","secondary-foreground":"hsl(222.2, 84%, 4.9%)","muted":"hsl(210, 40%, 96.1%)","muted-foreground":"hsl(215.4, 16.3%, 46.9%)","border":"hsl(214.3, 31.8%, 91.4%)"},"security":{"allowedIframeDomains":["mypancho.com"]},"sidebar":{"defaultState":"collapsed","logoUrl":"https://mypancho.com/account/assets/img/logo.png","profile":{"href":"#/account-settings.html","name":"Profile","role":"Account Settings","icon":"user-circle","iframeUrl":"https://mypancho.com/account/user/profile"},"navItems":[{"type":"link","href":"#/index.html","label":"Homepage","icon":"home","iframeUrl":"https://mypancho.com/account/homepage.php"},{"type":"link","href":"#/my-services.html","label":"My Orders","icon":"globe","iframeUrl":"https://mypancho.com/account/clientarea.php?action=services"},{"type":"link","href":"#/templates.html","label":"Browse Templates","icon":"layout-grid","iframeUrl":"https://mypancho.com/cms/products"},{"type":"link","href":"#/my-invoices.html","label":"Make A Payment","icon":"tag","iframeUrl":"https://mypancho.com/account/clientarea.php?action=invoices"},{"type":"header","label":"Manage Account"},{"type":"submenu","path":"account-dashboard","label":"My Account","icon":"user","children":[{"type":"link","href":"#/clientarea.html","label":"Account Dashboard","icon":"layout-dashboard","iframeUrl":"https://mypancho.com/account/clientarea.php"},{"type":"link","href":"#/account-settings.html","label":"Account Settings","icon":"sliders","iframeUrl":"https://mypancho.com/account/clientarea.php?action=details"},{"type":"link","href":"#/payment-methods.html","label":"Payment Methods","icon":"credit-card","iframeUrl":"https://mypancho.com/account/account/paymentmethods"}]},{"type":"submenu","path":"manage-billing","label":"Manage Billing","icon":"wallet","children":[{"type":"link","href":"#/my-invoices-billing.html","label":"My Invoices","icon":"receipt","iframeUrl":"https://mypancho.com/account/clientarea.php?action=invoices"},{"type":"link","href":"#/my-orders.html","label":"My Orders","icon":"history","iframeUrl":"https://mypancho.com/account/clientarea.php?action=services"},{"type":"link","href":"#/add-funds.html","label":"Add Funds","icon":"coins","iframeUrl":"https://mypancho.com/account/clientarea.php?action=addfunds"}]},{"type":"header","label":"Help & Information"},{"type":"submenu","path":"support","label":"Support","icon":"headset","children":[{"type":"link","href":"#/open-support-ticket.html","label":"Open Support Ticket","icon":"plus-circle","iframeUrl":"https://mypancho.com/account/supporttickets.php"},{"type":"link","href":"#/view-tickets.html","label":"View My Tickets","icon":"ticket","iframeUrl":"https://mypancho.com/account/supporttickets.php"},{"type":"link","href":"#/live-meeting.html","label":"Live Meeting","icon":"video","iframeUrl":"https://mypancho.com/chat/Pancho/chat/"},{"type":"link","href":"#/knowledgebase.html","label":"Knowledgebase","icon":"book","iframeUrl":"https://mypancho.com/account/knowledgebase"},{"type":"link","href":"#/downloads.html","label":"Downloads","icon":"download","iframeUrl":"https://mypancho.com/account/downloads.php"}]},{"type":"submenu","path":"legal-stuff","label":"Legal Stuff","icon":"shield","children":[{"type":"link","href":"#/terms-of-service.html","label":"Terms of Service","icon":"file-text","iframeUrl":"https://mypancho.com/account/pancho_terms-of-service.php"},{"type":"link","href":"#/privacy-policy.html","label":"Privacy Policy","icon":"eye","iframeUrl":"https://mypancho.com/account/pancho_privacy-policy.php"},{"type":"link","href":"#/cookie-policy.html","label":"Cookie Policy","icon":"shield-check","iframeUrl":"https://mypancho.com/account/pancho_cookie-policy.php"}]},{"type":"submenu","path":"information","label":"Information","icon":"info","children":[{"type":"link","href":"#/faq.html","label":"FAQ","icon":"book","iframeUrl":"https://mypancho.com/account/knowledgebase.php"},{"type":"link","href":"#/announcements.html","label":"Announcements","icon":"megaphone","iframeUrl":"https://mypancho.com/account/announcements"},{"type":"link","href":"#/network-status.html","label":"Network Status","icon":"signal","iframeUrl":"https://mypancho.com/account/serverstatus"}]}]}};
+
+// ==================== GLOBAL STATE ====================
+let appSettings = null;
+let isSidebarExpanded = false;
+let openSubmenus = new Set();
+let isMobile = false;
+let isMobileMenuOpen = false;
+let isHovering = false;
+
+// ==================== DOM ELEMENT REFERENCES ====================
+const sidebarContainer = document.getElementById('sidebar-container');
+const mainContent = document.getElementById('main-content');
+const mobileBackdrop = document.getElementById('mobile-backdrop');
+const mobileMenuButton = document.getElementById('mobile-menu-button');
+
+// ==================== UTILITY FUNCTIONS ====================
+
+function checkIfMobile() {
+    return window.matchMedia('(max-width: 767px)').matches;
+}
+
+async function fetchSettings() {
+    return EMBEDDED_SETTINGS;
+}
+
+function processURLOverrides(settings) {
+    const hash = window.location.hash;
+    const queryString = hash.includes('?') ? hash.split('?')[1].split('#')[0] : '';
+    const params = new URLSearchParams(queryString);
+
+    const newSettings = JSON.parse(JSON.stringify(settings));
+
+    if (newSettings.theme) {
+        for (const key in newSettings.theme) {
+            if (params.has(key)) {
+                newSettings.theme[key] = decodeURIComponent(params.get(key));
+            }
+        }
+    }
+
+    if (newSettings.sidebar && params.has('logoUrl')) {
+        newSettings.sidebar.logoUrl = decodeURIComponent(params.get('logoUrl'));
+    }
+
+    return newSettings;
+}
+
+function applyTheme(theme) {
+    if (!theme) return;
+    const root = document.documentElement;
+    for (const [key, value] of Object.entries(theme)) {
+        root.style.setProperty(`--color-${key}`, value);
+    }
+}
+
+function initializeSidebarState() {
+    const savedState = localStorage.getItem("sidebarState");
+    isSidebarExpanded = savedState 
+        ? savedState === 'expanded' 
+        : appSettings.sidebar.defaultState === 'expanded';
+
+    const savedSubmenus = localStorage.getItem("openSubmenus");
+    openSubmenus = savedSubmenus ? new Set(JSON.parse(savedSubmenus)) : new Set();
+}
+
+function findDefaultHref(navItems) {
+    for (const item of navItems) {
+        if (item.type === 'link') {
+            return item.href;
+        }
+        if (item.type === 'submenu' && item.children.length > 0) {
+            return item.children[0].href;
+        }
+    }
+    return '#/';
+}
+
+function findNavItemByHref(navItems, href) {
+    let bestMatch = undefined;
+
+    const checkItem = (item) => {
+        if (href.startsWith(item.href)) {
+            const nextChar = href[item.href.length];
+            if (nextChar === undefined || nextChar === '#' || nextChar === '?') {
+                if (!bestMatch || item.href.length > bestMatch.navLink.href.length) {
+                    const remainingPart = href.substring(item.href.length);
+                    bestMatch = { navLink: item, remainingPart };
+                }
+            }
+        }
+    };
+
+    for (const item of navItems) {
+        if (item.type === 'link') {
+            checkItem(item);
+        }
+        if (item.type === 'submenu') {
+            for (const child of item.children) {
+                checkItem(child);
+            }
+        }
+    }
+    return bestMatch;
+}
+
+// ==================== RENDERING FUNCTIONS ====================
+
+function createLinkHtml(item, isInSubmenu = false) {
+    const currentHash = window.location.hash || '#/';
+    const isActive = currentHash === item.href || currentHash.startsWith(item.href + '?') || currentHash.startsWith(item.href + '#');
+    const activeClasses = isInSubmenu ? 'text-primary' : 'bg-primary\/10 text-primary';
+    const defaultClasses = isInSubmenu 
+        ? 'hover:bg-muted text-secondary-foreground\/70 hover:text-secondary-foreground'
+        : 'hover:bg-muted text-secondary-foreground\/80 hover:text-secondary-foreground';
+    
+    const sizeClasses = isInSubmenu ? 'text-sm p-2 my-0.5' : 'p-2 my-2.5';
+    const iconSize = isInSubmenu ? 16 : 20;
+    
+    return `
+        <a href="${item.href}" 
+           data-testid="link-${item.label.toLowerCase().replace(/\s+/g, '-')}"
+           class="nav-link relative flex items-center ${sizeClasses} font-medium rounded-md cursor-pointer transition-colors group ${isActive ? activeClasses : defaultClasses}">
+            ${isInSubmenu ? `<div class="absolute left-0 h-full w-0.5 ${isActive ? 'bg-primary' : ''}"></div>` : ''}
+            <i data-lucide="${item.icon}" class="w-${iconSize/4} h-${iconSize/4} flex-shrink-0 ${isInSubmenu ? 'mr-3' : ''}"></i>
+            <span class="link-label whitespace-nowrap ${isInSubmenu ? '' : 'ml-3'} transition-opacity duration-200 ease-out">${item.label}</span>
+            
+            ${!isInSubmenu ? `<div class="tooltip absolute left-full rounded-md px-2 py-1 ml-2 bg-primary text-primary-foreground text-sm invisible opacity-20 -translate-x-3 transition-all group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 z-10 whitespace-nowrap">
+                ${item.label}
+                <div class="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-primary rotate-45"></div>
+            </div>` : ''}
+        </a>`;
+}
+
+function createSubmenuHtml(item) {
+    const currentHash = window.location.hash || '#/';
+    const isChildActive = item.children.some(child => 
+        currentHash === child.href || currentHash.startsWith(child.href + '?') || currentHash.startsWith(child.href + '#')
+    );
+    const isOpen = openSubmenus.has(item.path);
+    
+    let childrenHtml = '';
+    item.children.forEach(child => {
+        childrenHtml += createLinkHtml(child, true);
+    });
+    
+    return `
+        <div class="submenu-container">
+            <div data-submenu-path="${item.path}" 
+                 data-testid="submenu-${item.path}"
+                 class="submenu-toggle relative flex items-center p-2 my-2.5 font-medium rounded-md cursor-pointer transition-colors group ${isChildActive ? 'text-primary' : 'hover:bg-muted text-secondary-foreground\/80 hover:text-secondary-foreground'}">
+                <i data-lucide="${item.icon}" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="submenu-label flex-1 whitespace-nowrap ml-3 transition-opacity duration-200 ease-out">${item.label}</span>
+                <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 ml-auto ${isOpen ? 'rotated' : ''}" style="display: none;"></i>
+                
+                <div class="tooltip absolute left-full rounded-md px-2 py-1 ml-2 bg-primary text-primary-foreground text-sm invisible opacity-20 -translate-x-3 transition-all group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 z-10 whitespace-nowrap">
+                    ${item.label}
+                    <div class="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-primary rotate-45"></div>
+                </div>
+            </div>
+            <div class="submenu-children pl-5 ${isOpen ? '' : 'collapsed'}" style="height: auto;">
+                ${childrenHtml}
+            </div>
+        </div>`;
+}
+
+function createHeaderHtml(item) {
+    return `
+        <h3 class="header-label text-xs font-semibold uppercase text-muted-foreground pl-3 mt-4 mb-2 transition-all duration-300 ease-out">
+            ${item.label}
+        </h3>`;
+}
+
+function renderSidebar() {
+    const { navItems, profile, logoUrl } = appSettings.sidebar;
+    
+    let navHtml = '';
+    navItems.forEach(item => {
+        if (item.type === 'header') {
+            navHtml += createHeaderHtml(item);
+        } else if (item.type === 'link') {
+            navHtml += createLinkHtml(item);
+        } else if (item.type === 'submenu') {
+            navHtml += createSubmenuHtml(item);
+        }
+    });
+
+    const isEffectivelyExpanded = isMobile ? true : (isSidebarExpanded || isHovering);
+    const widthClass = isEffectivelyExpanded ? 'w-64' : 'w-16';
+    const mobileClasses = isMobile 
+        ? `fixed top-0 left-0 h-full z-40 transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:hidden`
+        : 'hidden md:flex';
+
+    sidebarContainer.innerHTML = `
+        <aside class="${mobileClasses} ${isMobile ? 'w-64' : widthClass} h-full flex-col bg-white border-r border-border shadow-sm transition-[width] duration-300 ease-out overflow-x-hidden"
+               data-testid="sidebar">
+            <div class="logo-container p-4 pb-2 flex items-center ${isEffectivelyExpanded ? 'justify-between' : 'justify-center'}">
+                <div class="logo-wrapper overflow-hidden transition-[max-width] duration-300 ease-out ${isEffectivelyExpanded ? 'max-w-32' : 'max-w-0'}">
+                    <img src="${logoUrl}" class="h-10 w-auto" alt="Logo" data-testid="logo" />
+                </div>
+                <button id="sidebar-toggle" 
+                        data-testid="button-sidebar-toggle"
+                        class="p-1.5 rounded-lg bg-secondary hover:bg-muted" 
+                        aria-label="${isEffectivelyExpanded ? 'Collapse sidebar' : 'Expand sidebar'}">
+                    <i data-lucide="${isEffectivelyExpanded ? 'chevron-left' : 'chevron-right'}" class="w-5 h-5 text-secondary-foreground"></i>
+                </button>
+            </div>
+            
+            <nav class="flex-1 px-3 overflow-y-auto overflow-x-hidden">
+                ${navHtml}
+            </nav>
+            
+            <div id="profile-section" 
+                 data-testid="profile-link"
+                 data-href="${profile.href}"
+                 data-iframe-url="${profile.iframeUrl || ''}"
+                 class="border-t border-border flex p-3 cursor-pointer hover:bg-muted">
+                <div class="w-10 h-10 rounded-md bg-primary flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="${profile.icon}" class="w-6 h-6 text-primary-foreground"></i>
+                </div>
+                <div class="profile-info flex-1 ml-3 min-w-0 transition-opacity duration-200 ease-out ${isEffectivelyExpanded ? 'opacity-100' : 'opacity-0'}">
+                    <div class="leading-4 whitespace-nowrap">
+                        <h4 class="font-semibold text-sm text-primary whitespace-nowrap">${profile.name}</h4>
+                        <span class="text-xs text-muted-foreground whitespace-nowrap">${profile.role}</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    `;
+
+    updateSidebarVisibility();
+    lucide.createIcons();
+    attachSidebarEventListeners();
+}
+
+function updateSidebarVisibility() {
+    const isEffectivelyExpanded = isMobile ? true : (isSidebarExpanded || isHovering);
+    
+    const labels = sidebarContainer.querySelectorAll('.link-label, .submenu-label, .profile-info, .header-label, .logo-wrapper');
+    labels.forEach(label => {
+        if (isEffectivelyExpanded) {
+            label.style.opacity = '1';
+            if (label.classList.contains('logo-wrapper')) {
+                label.classList.remove('max-w-0');
+                label.classList.add('max-w-32');
+            }
+        } else {
+            label.style.opacity = '0';
+            if (label.classList.contains('logo-wrapper')) {
+                label.classList.remove('max-w-32');
+                label.classList.add('max-w-0');
+            }
+        }
+    });
+    
+    const chevrons = sidebarContainer.querySelectorAll('.chevron-icon');
+    chevrons.forEach(chevron => {
+        chevron.style.display = isEffectivelyExpanded ? 'block' : 'none';
+    });
+    
+    const tooltips = sidebarContainer.querySelectorAll('.tooltip');
+    tooltips.forEach(tooltip => {
+        tooltip.style.display = isEffectivelyExpanded ? 'none' : 'block';
+    });
+    
+    const aside = sidebarContainer.querySelector('aside');
+    if (aside && !isMobile) {
+        aside.classList.remove('w-64', 'w-16');
+        aside.classList.add(isEffectivelyExpanded ? 'w-64' : 'w-16');
+    }
+}
+
+function renderMainContent() {
+    const currentHash = window.location.hash || '#/';
+    const navItems = appSettings.sidebar.navItems;
+    const defaultHref = findDefaultHref(navItems);
+    const targetHash = currentHash === '#/' ? defaultHref : currentHash;
+    const match = findNavItemByHref(navItems, targetHash);
+    
+    if (!match || !match.navLink.iframeUrl) {
+        mainContent.innerHTML = `
+            <div class="p-8" data-testid="welcome-screen">
+                <h1 class="text-3xl font-bold text-primary">Welcome to your Dashboard</h1>
+                <p class="mt-4 text-muted-foreground">Select a menu item to view its content.</p>
+                <p class="mt-2 text-sm text-muted-foreground">Current route: <code>${currentHash}</code></p>
+            </div>
+        `;
+        return;
+    }
+
+    const iframeUrl = match.navLink.iframeUrl;
+    const remainingPart = match.remainingPart;
+    
+    const allowedDomains = appSettings.security?.allowedIframeDomains || [];
+    let finalUrl;
+    
+    try {
+        finalUrl = new URL(iframeUrl, window.location.origin);
+    } catch (error) {
+        showSecurityError('The configured iframe URL is invalid.');
+        return;
+    }
+    
+    const isRelative = iframeUrl.startsWith('/') || iframeUrl.startsWith('./');
+    if (!isRelative) {
+        const hostname = finalUrl.hostname;
+        const isAllowed = allowedDomains.some(domain => 
+            hostname === domain || hostname.endsWith(`.${domain}`)
+        );
+        
+        if (!isAllowed) {
+            showSecurityError('For security reasons, only content from configured domains can be displayed.');
+            return;
+        }
+    }
+    
+    const [queryPart, hashPart] = remainingPart.split('#');
+    const paramsFromHash = new URLSearchParams(queryPart.startsWith('?') ? queryPart.substring(1) : '');
+    const iframeHash = hashPart ? `#${hashPart}` : '';
+    
+    paramsFromHash.forEach((value, key) => {
+        finalUrl.searchParams.append(key, value);
+    });
+    
+    if (iframeHash) {
+        finalUrl.hash = iframeHash;
+    }
+    
+    const finalUrlString = finalUrl.toString();
+    
+    mainContent.innerHTML = `
+        <div class="w-full h-full relative">
+            <div id="iframe-loader" class="absolute inset-0 flex items-center justify-center bg-secondary/50 backdrop-blur-sm z-10">
+                <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            </div>
+            <iframe
+                id="content-iframe"
+                data-testid="content-iframe"
+                src="${finalUrlString}"
+                class="w-full h-full border-none opacity-0 transition-opacity duration-300"
+                title="${match.navLink.label || 'Content'}"
+                allowfullscreen
+            ></iframe>
+        </div>
+    `;
+    
+    const iframe = document.getElementById('content-iframe');
+    const loader = document.getElementById('iframe-loader');
+    
+    iframe.addEventListener('load', () => {
+        loader.style.display = 'none';
+        iframe.classList.remove('opacity-0');
+        iframe.classList.add('opacity-100');
+    });
+}
+
+function showSecurityError(message) {
+    mainContent.innerHTML = `
+        <div class="p-8 text-center" data-testid="error-screen">
+            <h1 class="text-2xl font-bold text-red-600">Content Blocked</h1>
+            <p class="mt-4 text-muted-foreground">${message}</p>
+        </div>
+    `;
+}
+
+// ==================== EVENT HANDLERS ====================
+
+function attachSidebarEventListeners() {
+    const toggleButton = document.getElementById('sidebar-toggle');
+    if (toggleButton) {
+        toggleButton.addEventListener('click', () => {
+            if (isMobile) {
+                isMobileMenuOpen = false;
+                updateMobileMenu();
+            } else {
+                isSidebarExpanded = !isSidebarExpanded;
+                localStorage.setItem('sidebarState', isSidebarExpanded ? 'expanded' : 'collapsed');
+                updateSidebarVisibility();
+            }
+        });
+    }
+    
+    const submenuToggles = sidebarContainer.querySelectorAll('.submenu-toggle');
+    submenuToggles.forEach(toggle => {
+        toggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            const path = toggle.dataset.submenuPath;
+            toggleSubmenu(path);
+        });
+    });
+    
+    const navLinks = sidebarContainer.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            if (isMobile) {
+                isMobileMenuOpen = false;
+                updateMobileMenu();
+            }
+        });
+    });
+    
+    const profileSection = document.getElementById('profile-section');
+    if (profileSection) {
+        profileSection.addEventListener('click', () => {
+            const href = profileSection.dataset.href;
+            window.location.hash = href;
+            if (isMobile) {
+                isMobileMenuOpen = false;
+                updateMobileMenu();
+            }
+        });
+    }
+    
+    if (!isMobile) {
+        const aside = sidebarContainer.querySelector('aside');
+        if (aside) {
+            aside.addEventListener('mouseenter', () => {
+                if (!isSidebarExpanded) {
+                    isHovering = true;
+                    updateSidebarVisibility();
+                }
+            });
+            
+            aside.addEventListener('mouseleave', () => {
+                if (!isSidebarExpanded) {
+                    isHovering = false;
+                    updateSidebarVisibility();
+                }
+            });
+        }
+    }
+}
+
+function toggleSubmenu(path) {
+    if (openSubmenus.has(path)) {
+        openSubmenus.delete(path);
+    } else {
+        openSubmenus.add(path);
+    }
+    localStorage.setItem('openSubmenus', JSON.stringify(Array.from(openSubmenus)));
+    
+    const submenuToggle = sidebarContainer.querySelector(`[data-submenu-path="${path}"]`);
+    if (submenuToggle) {
+        const chevron = submenuToggle.querySelector('.chevron-icon');
+        const submenuChildren = submenuToggle.parentElement.querySelector('.submenu-children');
+        
+        if (openSubmenus.has(path)) {
+            chevron.classList.add('rotated');
+            submenuChildren.classList.remove('collapsed');
+            submenuChildren.style.height = submenuChildren.scrollHeight + 'px';
+        } else {
+            chevron.classList.remove('rotated');
+            submenuChildren.style.height = submenuChildren.scrollHeight + 'px';
+            submenuChildren.offsetHeight;
+            submenuChildren.classList.add('collapsed');
+        }
+    }
+}
+
+function updateMobileMenu() {
+    if (isMobileMenuOpen) {
+        mobileBackdrop.classList.remove('opacity-0', 'pointer-events-none');
+        mobileBackdrop.classList.add('opacity-100', 'pointer-events-auto');
+    } else {
+        mobileBackdrop.classList.remove('opacity-100', 'pointer-events-auto');
+        mobileBackdrop.classList.add('opacity-0', 'pointer-events-none');
+    }
+    renderSidebar();
+}
+
+function handleHashChange() {
+    renderMainContent();
+    renderSidebar();
+}
+
+function handleResize() {
+    const wasMobile = isMobile;
+    isMobile = checkIfMobile();
+    
+    if (wasMobile !== isMobile) {
+        if (isMobile) {
+            isMobileMenuOpen = false;
+        }
+        renderSidebar();
+    }
+}
+
+// ==================== INITIALIZATION ====================
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        isMobile = checkIfMobile();
+        
+        const settings = await fetchSettings();
+        appSettings = processURLOverrides(settings);
+
+        applyTheme(appSettings.theme);
+        
+        if (!isMobile) {
+            initializeSidebarState();
+        }
+
+        renderSidebar();
+        renderMainContent();
+        
+        mobileMenuButton.addEventListener('click', () => {
+            isMobileMenuOpen = !isMobileMenuOpen;
+            updateMobileMenu();
+        });
+        
+        mobileBackdrop.addEventListener('click', () => {
+            isMobileMenuOpen = false;
+            updateMobileMenu();
+        });
+        
+        window.addEventListener('hashchange', handleHashChange);
+        window.addEventListener('resize', handleResize);
+        
+        lucide.createIcons();
+
+    } catch (error) {
+        console.error("Failed to initialize application:", error);
+        mainContent.innerHTML = `<p class="p-8 text-red-500">Error: Failed to load settings.</p>`;
+    }
+});
+    </script>
+</body>
+</html>

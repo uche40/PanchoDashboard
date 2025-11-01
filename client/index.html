@@ -6,13 +6,13 @@
     <title>Modern Dashboard</title>
     <style>
       :root {
-        --color-primary: hsl(220, 13%, 61%);
-        --color-primary-foreground: hsl(210, 40%, 98%);
-        --color-secondary: hsl(210, 40%, 96.1%);
-        --color-secondary-foreground: hsl(222.2, 84%, 4.9%);
-        --color-muted: hsl(210, 40%, 96.1%);
-        --color-muted-foreground: hsl(215.4, 16.3%, 46.9%);
-        --color-border: hsl(214.3, 31.8%, 91.4%);
+        --color-primary: 220 13% 61%;
+        --color-primary-foreground: 210 40% 98%;
+        --color-secondary: 210 40% 96.1%;
+        --color-secondary-foreground: 222.2 84% 4.9%;
+        --color-muted: 210 40% 96.1%;
+        --color-muted-foreground: 215.4 16.3% 46.9%;
+        --color-border: 214.3 31.8% 91.4%;
       }
       html {
         font-size: 13.8px;
@@ -41,31 +41,24 @@
       .chevron-icon.rotated {
         transform: rotate(180deg);
       }
+      
+      /* Utility classes for colors */
+      .bg-secondary { background-color: hsl(var(--color-secondary)); }
+      .bg-white { background-color: white; }
+      .bg-muted { background-color: hsl(var(--color-muted)); }
+      .bg-primary { background-color: hsl(var(--color-primary)); }
+      .bg-primary\/10 { background-color: hsl(var(--color-primary) / 0.1); }
+      .text-primary { color: hsl(var(--color-primary)); }
+      .text-primary-foreground { color: hsl(var(--color-primary-foreground)); }
+      .text-secondary-foreground { color: hsl(var(--color-secondary-foreground)); }
+      .text-secondary-foreground\/70 { color: hsl(var(--color-secondary-foreground) / 0.7); }
+      .text-secondary-foreground\/80 { color: hsl(var(--color-secondary-foreground) / 0.8); }
+      .text-muted-foreground { color: hsl(var(--color-muted-foreground)); }
+      .text-red-500 { color: rgb(239, 68, 68); }
+      .text-red-600 { color: rgb(220, 38, 38); }
+      .border-border { border-color: hsl(var(--color-border)); }
     </style>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              primary: {
-                DEFAULT: 'var(--color-primary)',
-                foreground: 'var(--color-primary-foreground)',
-              },
-              secondary: {
-                DEFAULT: 'var(--color-secondary)',
-                foreground: 'var(--color-secondary-foreground)',
-              },
-              muted: {
-                DEFAULT: 'var(--color-muted)',
-                foreground: 'var(--color-muted-foreground)',
-              },
-              border: 'var(--color-border)',
-            },
-          }
-        }
-      }
-    </script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="bg-secondary">
