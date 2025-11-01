@@ -92,6 +92,11 @@
       .text-red-500 { color: rgb(239, 68, 68); }
       .text-red-600 { color: rgb(220, 38, 38); }
       .border-border { border-color: hsl(var(--color-border)); }
+      
+      /* Prevent scrollbar flicker */
+      #main-content {
+        scrollbar-gutter: stable;
+      }
     </style>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -114,7 +119,7 @@
             </header>
 
             <!-- Main content -->
-            <main id="main-content" class="flex-1 overflow-y-scroll"></main>
+            <main id="main-content" class="flex-1 overflow-y-auto"></main>
         </div>
     </div>
 
