@@ -311,21 +311,22 @@ function renderSidebar() {
                 ${navHtml}
             </nav>
             
-            <div class="border-t pt-2 pb-2 ${isEffectivelyExpanded ? 'px-2' : ''}" style="border-color: #f0f0f0; background-color: #f8f8f8;">
+            <div class="mt-auto border-t" style="border-color: #f0f0f0;">
                 <div id="profile-section" 
                      data-testid="profile-link"
                      data-href="${profile.href}"
                      data-iframe-url="${profile.iframeUrl || ''}"
-                     class="flex ${isEffectivelyExpanded ? 'p-2 rounded-md' : 'p-2'} cursor-pointer hover:bg-muted transition-colors ${isEffectivelyExpanded ? '' : 'justify-center'}"
-                     style="${isEffectivelyExpanded ? 'background-color: #f0f0f0;' : ''}">
-                    <div class="w-10 h-10 rounded-md bg-primary flex items-center justify-center flex-shrink-0">
-                        <i data-lucide="${profile.icon}" class="w-6 h-6 text-primary-foreground"></i>
-                    </div>
-                    <div class="profile-info flex-1 ml-3 min-w-0 transition-opacity duration-200 ease-out ${isEffectivelyExpanded ? 'opacity-100' : 'opacity-0'}">
-                        <div class="leading-4 whitespace-nowrap">
-                            <h4 class="font-medium text-sm text-primary whitespace-nowrap">${profile.name}</h4>
-                            <span class="text-xs text-muted-foreground whitespace-nowrap">${profile.role}</span>
+                     class="flex items-center ${isEffectivelyExpanded ? 'p-4 gap-3' : 'p-3 justify-center'} cursor-pointer transition-all duration-200 hover:bg-secondary/50"
+                     style="transition: all 200ms ease;">
+                    <div class="relative flex-shrink-0">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary flex items-center justify-center ring-2 ring-white shadow-sm" style="background: linear-gradient(135deg, hsl(var(--color-primary)) 0%, hsl(220, 13%, 55%) 100%);">
+                            <i data-lucide="${profile.icon}" class="w-5 h-5 text-primary-foreground"></i>
                         </div>
+                        <div class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 ring-2 ring-white"></div>
+                    </div>
+                    <div class="profile-info flex-1 min-w-0 transition-opacity duration-200 ease-out ${isEffectivelyExpanded ? 'opacity-100' : 'opacity-0'}">
+                        <h4 class="font-semibold text-sm text-secondary-foreground truncate">${profile.name}</h4>
+                        <p class="text-xs text-muted-foreground truncate mt-0.5">${profile.role}</p>
                     </div>
                 </div>
             </div>
