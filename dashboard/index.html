@@ -318,11 +318,10 @@ function renderSidebar() {
                      data-iframe-url="${profile.iframeUrl || ''}"
                      class="flex items-center ${isEffectivelyExpanded ? 'p-4 gap-3' : 'p-3 justify-center'} cursor-pointer transition-all duration-200 hover:bg-secondary/50"
                      style="transition: all 200ms ease;">
-                    <div class="relative flex-shrink-0">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary flex items-center justify-center ring-2 ring-white shadow-sm" style="background: linear-gradient(135deg, hsl(var(--color-primary)) 0%, hsl(220, 13%, 55%) 100%);">
+                    <div class="flex-shrink-0">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center ring-2 ring-border/20 shadow-sm" style="background: linear-gradient(135deg, hsl(var(--color-primary)) 0%, hsl(220, 13%, 55%) 100%);">
                             <i data-lucide="${profile.icon}" class="w-5 h-5 text-primary-foreground"></i>
                         </div>
-                        <div class="absolute w-2.5 h-2.5 rounded-full bg-green-500 ring-1 ring-white" style="bottom: 1px; right: 1px;"></div>
                     </div>
                     <div class="profile-info flex-1 min-w-0 transition-opacity duration-200 ease-out ${isEffectivelyExpanded ? 'opacity-100' : 'opacity-0'}">
                         <h4 class="font-semibold text-sm text-secondary-foreground truncate">${profile.name}</h4>
