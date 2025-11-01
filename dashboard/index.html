@@ -99,20 +99,17 @@
         scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
       }
       
-      /* Mobile header transparent with hide/show animation */
+      /* Mobile header transparent with content behind */
+      #mobile-header {
+        background: transparent;
+        position: relative;
+        z-index: 20;
+      }
+      
+      /* Main content extends behind mobile header */
       @media (max-width: 767px) {
-        #mobile-header {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          background: transparent;
-          z-index: 20;
-          transition: transform 0.3s ease-out;
-          transform: translateY(0);
-        }
-        #mobile-header.header-hidden {
-          transform: translateY(-100%);
+        #main-content {
+          margin-top: -56px;
         }
       }
       
@@ -144,7 +141,7 @@
         <div id="mobile-backdrop" class="fixed inset-0 bg-black/30 z-30 transition-opacity duration-300 opacity-0 pointer-events-none md:hidden" aria-hidden="true"></div>
 
         <!-- Main content area -->
-        <div class="relative flex flex-col flex-1 w-full min-w-0 overflow-y-auto">
+        <div class="relative flex flex-col flex-1 w-full min-w-0">
             <!-- Mobile header -->
             <header id="mobile-header" class="md:hidden flex items-center justify-between p-4">
                 <button id="mobile-menu-button" data-testid="button-mobile-menu" class="p-1.5 rounded-lg bg-secondary hover:bg-muted" aria-label="${appSettings.messages?.ariaLabels?.openMenu || 'Open menu'}">
@@ -153,7 +150,7 @@
             </header>
 
             <!-- Main content -->
-            <main id="main-content" class="flex-1"></main>
+            <main id="main-content" class="flex-1 overflow-y-auto"></main>
         </div>
     </div>
 
@@ -730,42 +727,6 @@ function handleResize() {
     }
 }
 
-// ==================== MOBILE HEADER CONTROLLER ====================
-
-let isHeaderVisible = true;
-
-function initMobileHeaderGestures() {
-    if (!isMobile) return;
-    
-    const mobileHeader = document.getElementById('mobile-header');
-    if (!mobileHeader) {
-        console.warn('Mobile header element not found');
-        return;
-    }
-    
-    console.log('Mobile header gestures initialized');
-    
-    // Listen on the entire document for any tap
-    document.addEventListener('touchstart', (e) => {
-        // Check if the touch is on the header itself
-        if (mobileHeader.contains(e.target)) {
-            console.log('Touch on header - showing');
-            mobileHeader.classList.remove('header-hidden');
-            isHeaderVisible = true;
-            return;
-        }
-        
-        // Touch anywhere else - toggle
-        console.log('Touch on content - toggling', isHeaderVisible);
-        if (isHeaderVisible) {
-            mobileHeader.classList.add('header-hidden');
-        } else {
-            mobileHeader.classList.remove('header-hidden');
-        }
-        isHeaderVisible = !isHeaderVisible;
-    }, { passive: true });
-}
-
 // ==================== INITIALIZATION ====================
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -785,11 +746,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         renderSidebar();
         renderMainContent();
-        
-        // Initialize mobile header gestures
-        if (isMobile) {
-            initMobileHeaderGestures();
-        }
         
         mobileMenuButton.addEventListener('click', () => {
             isMobileMenuOpen = !isMobileMenuOpen;
