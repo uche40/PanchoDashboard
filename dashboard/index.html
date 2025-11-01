@@ -99,18 +99,20 @@
         scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
       }
       
-      /* Mobile header transparent and positioned at top of scroll */
+      /* Mobile header transparent with hide/show animation */
       @media (max-width: 767px) {
-        .mobile-scroll-container {
-          position: relative;
-        }
         #mobile-header {
-          position: absolute;
+          position: fixed;
           top: 0;
           left: 0;
           right: 0;
           background: transparent;
           z-index: 20;
+          transition: transform 0.3s ease-out;
+          transform: translateY(0);
+        }
+        #mobile-header.header-hidden {
+          transform: translateY(-100%);
         }
       }
       
@@ -572,16 +574,15 @@ function renderMainContent() {
     const finalUrlString = finalUrl.toString();
     
     mainContent.innerHTML = `
-        <div class="w-full relative mobile-scroll-container" style="min-height: 200vh;">
-            <div id="iframe-loader" class="absolute inset-0 flex items-center justify-center bg-secondary/50 backdrop-blur-sm z-10" style="height: 100vh;">
+        <div class="w-full h-full relative">
+            <div id="iframe-loader" class="absolute inset-0 flex items-center justify-center bg-secondary/50 backdrop-blur-sm z-10">
                 <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
             </div>
             <iframe
                 id="content-iframe"
                 data-testid="content-iframe"
                 src="${finalUrlString}"
-                class="w-full border-none opacity-0 transition-opacity duration-300"
-                style="height: 200vh;"
+                class="w-full h-full border-none opacity-0 transition-opacity duration-300"
                 title="${match.navLink.label || appSettings.messages?.ariaLabels?.contentFrame || 'Content'}"
                 allowfullscreen
             ></iframe>
@@ -729,6 +730,62 @@ function handleResize() {
     }
 }
 
+// ==================== MOBILE HEADER GESTURE CONTROLLER ====================
+
+let lastTouchY = 0;
+let lastScrollDirection = null;
+let scrollThreshold = 50;
+
+function initMobileHeaderGestures() {
+    if (!isMobile) return;
+    
+    const mobileHeader = document.getElementById('mobile-header');
+    if (!mobileHeader) return;
+    
+    let touchStartY = 0;
+    let accumulatedDelta = 0;
+    
+    // Touch event handlers
+    document.addEventListener('touchstart', (e) => {
+        touchStartY = e.touches[0].clientY;
+        accumulatedDelta = 0;
+    }, { passive: true });
+    
+    document.addEventListener('touchmove', (e) => {
+        const touchY = e.touches[0].clientY;
+        const deltaY = touchStartY - touchY;
+        accumulatedDelta += deltaY;
+        touchStartY = touchY;
+        
+        // Scrolling down (deltaY > 0) - hide header
+        if (accumulatedDelta > scrollThreshold && !mobileHeader.classList.contains('header-hidden')) {
+            mobileHeader.classList.add('header-hidden');
+            accumulatedDelta = 0;
+        }
+        // Scrolling up (deltaY < 0) - show header
+        else if (accumulatedDelta < -scrollThreshold && mobileHeader.classList.contains('header-hidden')) {
+            mobileHeader.classList.remove('header-hidden');
+            accumulatedDelta = 0;
+        }
+    }, { passive: true });
+    
+    // Wheel event as fallback for desktop testing
+    document.addEventListener('wheel', (e) => {
+        if (!isMobile) return;
+        
+        const deltaY = e.deltaY;
+        
+        // Scrolling down - hide header
+        if (deltaY > 5 && !mobileHeader.classList.contains('header-hidden')) {
+            mobileHeader.classList.add('header-hidden');
+        }
+        // Scrolling up - show header
+        else if (deltaY < -5 && mobileHeader.classList.contains('header-hidden')) {
+            mobileHeader.classList.remove('header-hidden');
+        }
+    }, { passive: true });
+}
+
 // ==================== INITIALIZATION ====================
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -748,6 +805,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         renderSidebar();
         renderMainContent();
+        
+        // Initialize mobile header gestures
+        if (isMobile) {
+            initMobileHeaderGestures();
+        }
         
         mobileMenuButton.addEventListener('click', () => {
             isMobileMenuOpen = !isMobileMenuOpen;
