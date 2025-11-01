@@ -291,8 +291,8 @@ function renderSidebar() {
         : 'hidden md:flex';
 
     sidebarContainer.innerHTML = `
-        <aside class="${mobileClasses} ${isMobile ? 'w-64' : widthClass} h-full flex flex-col bg-white transition-[width] duration-300 ease-out overflow-x-hidden border-r"
-               style="border-color: #f0f0f0;"
+        <aside class="${mobileClasses} ${isMobile ? 'w-64' : widthClass} h-full flex flex-col bg-white border-r"
+               style="border-color: #f0f0f0; transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1); will-change: width;"
                data-testid="sidebar">
             <div class="logo-container p-4 pb-2 flex items-center ${isEffectivelyExpanded ? 'justify-between' : 'justify-center'}">
                 <div class="logo-wrapper overflow-hidden transition-[max-width] duration-300 ease-out ${isEffectivelyExpanded ? 'max-w-32' : 'max-w-0'}">
