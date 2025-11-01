@@ -186,114 +186,23 @@ function getAppNameFromURL() {
     return params.get('app') || 'partners';
 }
 
-function mergeNavItems(defaultItems, appItems) {
-    if (!appItems || appItems.length === 0) {
-        return defaultItems;
-    }
-
-    const result = [...defaultItems];
-    const processedIndices = new Set();
-
-    for (const appItem of appItems) {
-        if (appItem._position === 'before') {
-            result.unshift(appItem);
-        } else if (appItem._position === 'after') {
-            result.push(appItem);
-        } else if (appItem._override) {
-            const overrideKey = appItem._override;
-            let overrideIndex = -1;
-            
-            if (overrideKey === 'href') {
-                overrideIndex = result.findIndex(item => item.href === appItem.href);
-            } else if (overrideKey === 'path') {
-                overrideIndex = result.findIndex(item => item.path === appItem.path);
-            } else if (overrideKey === 'label') {
-                overrideIndex = result.findIndex(item => item.label === appItem.label);
-            }
-
-            if (overrideIndex !== -1) {
-                const cleanedItem = { ...appItem };
-                delete cleanedItem._override;
-                delete cleanedItem._position;
-                
-                if (appItem.children && result[overrideIndex].children) {
-                    cleanedItem.children = mergeNavItems(result[overrideIndex].children, appItem.children);
-                }
-                
-                result[overrideIndex] = cleanedItem;
-                processedIndices.add(overrideIndex);
-            } else {
-                const cleanedItem = { ...appItem };
-                delete cleanedItem._override;
-                delete cleanedItem._position;
-                result.push(cleanedItem);
-            }
-        } else {
-            const cleanedItem = { ...appItem };
-            delete cleanedItem._position;
-            result.push(cleanedItem);
-        }
-    }
-
-    return result;
-}
-
-function deepMerge(target, source) {
-    if (!source) return target;
-    if (!target) return source;
-
-    const result = { ...target };
-
-    for (const key in source) {
-        if (key.startsWith('_comment')) continue;
-
-        if (key === 'navItems' && Array.isArray(source[key])) {
-            result[key] = mergeNavItems(target[key] || [], source[key]);
-        } else if (typeof source[key] === 'object' && !Array.isArray(source[key]) && source[key] !== null) {
-            result[key] = deepMerge(target[key] || {}, source[key]);
-        } else {
-            result[key] = source[key];
-        }
-    }
-
-    return result;
-}
-
 async function fetchSettings() {
     const appName = getAppNameFromURL();
+    const settingsPath = `apps/${appName}/settings.json`;
     
     try {
-        const defaultResponse = await fetch('default-settings.json');
-        if (!defaultResponse.ok) {
-            throw new Error('Failed to load default settings');
+        const response = await fetch(settingsPath);
+        if (!response.ok) {
+            throw new Error(`Failed to load settings for app: ${appName}`);
         }
-        const defaultSettings = await defaultResponse.json();
-
-        let appSettings = null;
-        try {
-            const appResponse = await fetch(`apps/${appName}/settings.json`);
-            if (appResponse.ok) {
-                appSettings = await appResponse.json();
-                console.log(`Loaded app-specific settings for: ${appName}`);
-            }
-        } catch (appError) {
-            console.log(`No app-specific settings found for ${appName}, using defaults only`);
-        }
-
-        const mergedSettings = appSettings 
-            ? deepMerge(defaultSettings, appSettings)
-            : defaultSettings;
-
-        console.log('Final merged settings:', mergedSettings);
-        return mergedSettings;
-
+        return await response.json();
     } catch (error) {
         console.error('Error loading settings:', error);
         mainContent.innerHTML = `
             <div class="p-8 text-center" data-testid="error-screen">
-                <h1 class="text-2xl font-bold text-red-600">Settings Error</h1>
-                <p class="mt-4 text-muted-foreground">Failed to load settings</p>
-                <p class="mt-2 text-sm text-muted-foreground">${error.message}</p>
+                <h1 class="text-2xl font-bold text-red-600">App Not Found</h1>
+                <p class="mt-4 text-muted-foreground">Could not load settings for app: <code>${appName}</code></p>
+                <p class="mt-2 text-sm text-muted-foreground">Please check that <code>${settingsPath}</code> exists.</p>
             </div>
         `;
         throw error;
