@@ -142,10 +142,32 @@ function checkIfMobile() {
     return window.matchMedia('(max-width: 767px)').matches;
 }
 
+function getAppNameFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('app') || 'partners';
+}
+
 async function fetchSettings() {
-    const response = await fetch("settings.json");
-    if (!response.ok) throw new Error("Failed to fetch settings.json");
-    return await response.json();
+    const appName = getAppNameFromURL();
+    const settingsPath = `apps/${appName}/settings.json`;
+    
+    try {
+        const response = await fetch(settingsPath);
+        if (!response.ok) {
+            throw new Error(`Failed to load settings for app: ${appName}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error loading settings:', error);
+        mainContent.innerHTML = `
+            <div class="p-8 text-center" data-testid="error-screen">
+                <h1 class="text-2xl font-bold text-red-600">App Not Found</h1>
+                <p class="mt-4 text-muted-foreground">Could not load settings for app: <code>${appName}</code></p>
+                <p class="mt-2 text-sm text-muted-foreground">Please check that <code>${settingsPath}</code> exists.</p>
+            </div>
+        `;
+        throw error;
+    }
 }
 
 function processURLOverrides(settings) {
