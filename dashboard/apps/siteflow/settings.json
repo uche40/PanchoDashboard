@@ -5,7 +5,7 @@
       {
         "type": "link",
         "href": "#/index.html",
-        "label": "Homepage",
+        "label": "SiteFlow Homepage",
         "icon": "home",
         "iframeUrl": "https://mypancho.com/account/homepage.php"
       },
