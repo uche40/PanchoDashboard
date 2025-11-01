@@ -35,6 +35,51 @@ The dashboard is a single HTML file that:
 - `https://mypancho.com/?app=clients` → Loads `apps/clients/settings.json`
 - `https://mypancho.com/` (no parameter) → Defaults to `apps/partners/settings.json`
 
+### Smart Settings Override System (NEW!)
+
+**Scales to 200+ apps with minimal duplication!**
+
+The dashboard now uses a smart two-tier settings system:
+1. **Default Settings** (`default-settings.json`) - Common settings shared across all apps
+2. **App-Specific Settings** (`apps/{app}/settings.json`) - Only what's unique to each app
+3. **Intelligent Merging** - Automatically combines both with override support
+
+**Benefits:**
+- ✅ Define common menus once in `default-settings.json`
+- ✅ App settings are 5-20 lines instead of 275+
+- ✅ Update 200 apps by changing one file
+- ✅ Override specific items using `_override` markers
+- ✅ Control menu position with `_position: "before"` or `"after"`
+
+**Example - Minimal App:**
+```json
+{
+  "page": {
+    "title": "My Custom App"
+  }
+}
+```
+This 5-line file gets all default menus, styling, and features!
+
+**Example - Override a Menu Item:**
+```json
+{
+  "sidebar": {
+    "navItems": [
+      {
+        "_override": "label",
+        "type": "link",
+        "href": "#/index.html",
+        "label": "Custom Homepage",
+        "icon": "home"
+      }
+    ]
+  }
+}
+```
+
+**See `SETTINGS-OVERRIDE-GUIDE.md` for complete documentation.**
+
 ### Deep Linking
 The `?app=` parameter works seamlessly with hash routing and parameter passing:
 - `/?app=partners#/homepage.html` - Loads partners app, navigates to homepage
@@ -42,10 +87,45 @@ The `?app=` parameter works seamlessly with hash routing and parameter passing:
 - `/?app=partners#/settings.html?tab=billing#profile` - Full deep linking with parameters and hash
 
 ### Creating New Apps
-1. Create folder: `apps/your-app-name/`
-2. Copy settings: `cp apps/partners/settings.json apps/your-app-name/settings.json`
-3. Customize the new settings file
-4. Access via: `https://mypancho.com/?app=your-app-name`
+
+**Option 1: Use all defaults (1 line)**
+```bash
+mkdir -p apps/myapp && echo '{}' > apps/myapp/settings.json
+```
+
+**Option 2: Custom title only (5 lines)**
+```bash
+mkdir -p apps/myapp
+cat > apps/myapp/settings.json << 'EOF'
+{
+  "page": {
+    "title": "My App"
+  }
+}
+EOF
+```
+
+**Option 3: Add custom menu item**
+```bash
+mkdir -p apps/myapp
+cat > apps/myapp/settings.json << 'EOF'
+{
+  "sidebar": {
+    "navItems": [
+      {
+        "_position": "before",
+        "type": "link",
+        "href": "#/special.html",
+        "label": "Special Feature",
+        "icon": "zap"
+      }
+    ]
+  }
+}
+EOF
+```
+
+Access any app via: `https://mypancho.com/?app=myapp`
 
 ## Features
 
@@ -167,6 +247,16 @@ Edit `apps/{appName}/settings.json` to customize:
 - **Fully customizable**: Every aspect configurable via JSON
 
 ## Recent Updates
+
+- 2025-11-01: Added Smart Settings Override System
+  - Created `default-settings.json` with all common settings
+  - Apps now only need to define what's unique (5-20 lines vs 275+)
+  - Intelligent merging with override support (`_override` markers)
+  - Position control (`_position: "before"` or `"after"`)
+  - Scales to 200+ apps with minimal duplication
+  - Update all apps by changing default settings once
+  - Created comprehensive `SETTINGS-OVERRIDE-GUIDE.md` documentation
+  - Migrated existing apps to use minimal settings files
 
 - 2025-11-01: Added beautiful thin scrollbar styling
   - 6px width, subtle colors
