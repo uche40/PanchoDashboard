@@ -107,11 +107,19 @@
           },
           {
             "type": "link",
+            "href": "#/make-a-payment.html",
+            "label": "Make a payment",
+            "icon": "credit-card",
+            "iframeUrl": "https://mypancho.com/account/clientarea.php?action=invoices"
+          },
+          {
+            "type": "link",
             "href": "#/add-funds.html",
             "label": "Add Funds",
             "icon": "coins",
             "iframeUrl": "https://mypancho.com/account/clientarea.php?action=addfunds"
           }
+          
         ]
       },
       {
