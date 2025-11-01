@@ -2,7 +2,7 @@
 
 A 100% data-driven, standalone dashboard application built with vanilla HTML, CSS, and JavaScript. No React, no TypeScript, no build process.
 
-**NEW: Multi-App Support** - Run multiple independent dashboards from a single installation by loading different settings based on URL parameters!
+**Multi-App Support** - Run multiple independent dashboards from a single installation by loading different settings based on URL parameters!
 
 ## Files & Structure
 
@@ -21,9 +21,9 @@ The dashboard can load different configurations based on a URL parameter, allowi
 
 ### Usage
 
-- **Default app**: `http://localhost:5000/` → Loads `apps/partners/settings.json`
-- **Specific app**: `http://localhost:5000/?app=partners` → Loads `apps/partners/settings.json`
-- **Another app**: `http://localhost:5000/?app=clients` → Loads `apps/clients/settings.json`
+- **Default app**: `https://mypancho.com/` → Loads `apps/partners/settings.json`
+- **Specific app**: `https://mypancho.com/?app=partners` → Loads `apps/partners/settings.json`
+- **Another app**: `https://mypancho.com/?app=clients` → Loads `apps/clients/settings.json`
 
 ### Creating a New App
 
@@ -42,45 +42,95 @@ cp partners/settings.json clients/settings.json
 # Edit clients/settings.json with your custom navigation, branding, etc.
 ```
 
-Then visit: `http://localhost:5000/?app=clients`
+Then visit: `https://mypancho.com/?app=clients`
 
-### Deep Linking Still Works
+## Deep Linking & Parameter Passing
 
-The multi-app feature works seamlessly with the existing hash-based routing:
+The dashboard seamlessly passes URL parameters and hash fragments to embedded iframes, enabling powerful deep linking capabilities.
 
-- `?app=partners#/homepage.html` - Loads partners app and navigates to homepage
-- `?app=clients#/dashboard.html` - Loads clients app and navigates to dashboard
+### How It Works
 
-The `?app=` parameter is separate from the hash routing, so all existing navigation features continue to work perfectly.
+The `?app=` parameter selects which dashboard to load, while everything after the `#` is used for navigation and passed to iframes:
 
-## How to Use
-
-### Option 1: Open Directly
-Simply open `index.html` in any web browser. It will default to the `partners` app.
-
-### Option 2: Local Server
-Run any simple HTTP server in the `dashboard/` directory:
-
-```bash
-# Python 3
-python3 -m http.server 8000
-
-# Python 2
-python -m SimpleHTTPServer 8000
-
-# Node.js (npx)
-npx serve
-
-# PHP
-php -S localhost:8000
+```
+https://mypancho.com/?app=partners#/page.html?param=value#section
+                      └─────────┘ └──────────────────────────────┘
+                      App selector   Navigation + iframe parameters
 ```
 
-Then visit: 
-- `http://localhost:8000/` (default app)
-- `http://localhost:8000/?app=partners`
-- `http://localhost:8000/?app=your-app-name`
+### Deep Linking Examples
 
-## Customize Your Dashboard
+**Example 1: Navigate to a specific page**
+```
+https://mypancho.com/?app=partners#/account-settings.html
+```
+- Loads the "partners" app
+- Navigates to the menu item with href `#/account-settings.html`
+- Loads that item's iframe URL
+
+**Example 2: Pass query parameters to iframe**
+```
+https://mypancho.com/?app=partners#/account-settings.html?tab=billing&view=details
+```
+- Opens account settings
+- Iframe receives: `https://mypancho.com/account/clientarea.php?action=details&tab=billing&view=details`
+
+**Example 3: Pass hash fragment to iframe**
+```
+https://mypancho.com/?app=clients#/homepage.html#welcome-section
+```
+- Opens homepage
+- Iframe receives the hash: `#welcome-section`
+- Useful for scrolling to specific sections
+
+**Example 4: Multiple parameters + hash**
+```
+https://mypancho.com/?app=partners#/my-invoices.html?status=unpaid&sort=date#invoice-123
+```
+- Opens invoices page
+- Iframe URL gets: `?status=unpaid&sort=date#invoice-123`
+- Perfect for linking directly to a specific invoice
+
+**Example 5: User IDs and filters**
+```
+https://mypancho.com/?app=clients#/account-settings.html?userId=456&section=profile#personal-info
+```
+- Opens account settings
+- Passes user ID and section to iframe
+- Scrolls to personal info section
+
+### Use Cases for Deep Linking
+
+- **Email Links**: Send customers direct links to specific invoices or tickets
+- **Support**: Link to exact pages in documentation
+- **Onboarding**: Guide users to specific settings or forms
+- **Notifications**: Deep link from emails/SMS to the exact content
+- **Bookmarks**: Users can bookmark specific pages with filters applied
+
+### Technical Details
+
+All query parameters and hash fragments after the menu item's href are automatically appended to the iframe's URL. The dashboard intelligently:
+- Extracts parameters from the hash route
+- Appends them as query parameters to the iframe URL
+- Preserves nested hash fragments
+- Works with any number of parameters
+
+## Features
+
+- ✅ **Multi-app support** - Run multiple dashboards from one installation
+- ✅ **Deep linking** - Pass parameters and hash fragments to iframes
+- ✅ Collapsible sidebar with hover-to-expand
+- ✅ Mobile responsive slide-out menu
+- ✅ Multi-level navigation (headers, links, submenus)
+- ✅ Hash-based routing with query parameter support
+- ✅ Iframe content embedding with loading indicator
+- ✅ Domain whitelist security for iframes
+- ✅ Dynamic theming via URL parameters
+- ✅ localStorage state persistence
+- ✅ 100% data-driven (zero hardcoded values)
+- ✅ Zero dependencies (CDN for Tailwind CSS & Lucide icons)
+
+## Customization
 
 All customization is done through `apps/{appName}/settings.json`. The file is organized with commonly-changed items at the top and technical settings at the bottom:
 
@@ -110,19 +160,6 @@ Edit `sidebar.navItems` to add, remove, or modify menu items. Supports:
 - `styling` - Fonts and icon appearance
 - `theme` - All color values (use HSL format)
 
-## Features
-
-- ✅ **Multi-app support** - Run multiple dashboards from one installation
-- ✅ Collapsible sidebar with hover-to-expand
-- ✅ Mobile responsive slide-out menu
-- ✅ Multi-level navigation (headers, links, submenus)
-- ✅ Hash-based routing with query parameter support
-- ✅ Iframe content embedding with loading indicator
-- ✅ Dynamic theming via URL parameters
-- ✅ localStorage state persistence
-- ✅ 100% data-driven (zero hardcoded values)
-- ✅ Zero dependencies (CDN for Tailwind CSS & Lucide icons)
-
 ## Use Cases for Multi-App
 
 - **Different Clients**: Create separate dashboards for different clients
@@ -141,7 +178,7 @@ Open `apps/partners/settings.json` (or your app's settings) and add to `sidebar.
   "href": "#/new-page.html",
   "label": "My New Page",
   "icon": "star",
-  "iframeUrl": "https://example.com/page"
+  "iframeUrl": "https://mypancho.com/account/new-page.php"
 }
 ```
 
@@ -153,5 +190,6 @@ Icons are from [Lucide Icons](https://lucide.dev/icons/) - just use the icon nam
 - **Pure vanilla JavaScript**: No frameworks, no transpilation
 - **Single HTML file**: Everything in one place
 - **Multi-app architecture**: Settings loaded dynamically via URL parameter
+- **Parameter forwarding**: Query params and hash fragments passed to iframes
 - **CDN resources**: Tailwind CSS and Lucide icons
 - **Works anywhere**: Any modern browser with JavaScript

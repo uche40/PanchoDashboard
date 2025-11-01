@@ -2,6 +2,8 @@
 
 A 100% data-driven, standalone vanilla JavaScript dashboard application with multi-app support - no React, no TypeScript, no build process.
 
+**Hosted at**: https://mypancho.com/
+
 ## Structure
 
 ```
@@ -21,6 +23,7 @@ The dashboard is a single HTML file that:
 - Uses Tailwind CSS (CDN) for styling
 - Uses Lucide icons (CDN) for UI icons
 - Implements collapsible sidebar, mobile menu, hash routing, and iframe embedding
+- Passes URL parameters and hash fragments to iframes for deep linking
 - Stores user preferences in localStorage
 - **Zero hardcoded values** - everything is configurable
 - **Multi-app capable** - run multiple dashboards from one installation
@@ -28,34 +31,59 @@ The dashboard is a single HTML file that:
 ## Multi-App Architecture
 
 ### URL Structure
-- `/?app=partners` → Loads `apps/partners/settings.json`
-- `/?app=clients` → Loads `apps/clients/settings.json`
-- `/` (no parameter) → Defaults to `apps/partners/settings.json`
+- `https://mypancho.com/?app=partners` → Loads `apps/partners/settings.json`
+- `https://mypancho.com/?app=clients` → Loads `apps/clients/settings.json`
+- `https://mypancho.com/` (no parameter) → Defaults to `apps/partners/settings.json`
 
 ### Deep Linking
-The `?app=` parameter works seamlessly with hash routing:
+The `?app=` parameter works seamlessly with hash routing and parameter passing:
 - `/?app=partners#/homepage.html` - Loads partners app, navigates to homepage
-- `/?app=clients#/dashboard.html` - Loads clients app, navigates to dashboard
+- `/?app=clients#/invoices.html?status=unpaid` - Loads clients app, passes status parameter to iframe
+- `/?app=partners#/settings.html?tab=billing#profile` - Full deep linking with parameters and hash
 
 ### Creating New Apps
 1. Create folder: `apps/your-app-name/`
 2. Copy settings: `cp apps/partners/settings.json apps/your-app-name/settings.json`
 3. Customize the new settings file
-4. Access via: `?app=your-app-name`
+4. Access via: `https://mypancho.com/?app=your-app-name`
 
 ## Features
 
 - ✅ **Multi-app support** - Load different settings per app via URL parameter
+- ✅ **Deep linking & parameter passing** - URL params and hash fragments forwarded to iframes
 - ✅ Collapsible sidebar with hover-to-expand on desktop
 - ✅ Mobile slide-out overlay menu
 - ✅ Multi-level navigation (headers, links, expandable submenus)
 - ✅ Hash-based routing with query parameter support
-- ✅ Iframe content loading with domain whitelist
+- ✅ Iframe content loading with domain whitelist security
 - ✅ Iframe loading indicator with spinner
+- ✅ Beautiful thin scrollbar styling
 - ✅ localStorage state persistence
 - ✅ Dynamic theming via URL parameters
 - ✅ 100% data-driven - zero hardcoded values
 - ✅ Zero build process required
+
+## Deep Linking Examples
+
+**Navigate to specific page:**
+```
+https://mypancho.com/?app=partners#/account-settings.html
+```
+
+**Pass query parameters to iframe:**
+```
+https://mypancho.com/?app=partners#/my-invoices.html?status=unpaid&sort=date
+```
+
+**Include hash fragments for sections:**
+```
+https://mypancho.com/?app=clients#/homepage.html#welcome-section
+```
+
+**Complex deep linking:**
+```
+https://mypancho.com/?app=partners#/account-settings.html?userId=456&tab=billing#payment-methods
+```
 
 ## Configuration (settings.json)
 
@@ -134,10 +162,20 @@ Edit `apps/{appName}/settings.json` to customize:
 - **Pure vanilla JavaScript**: No frameworks, no transpilation
 - **100% data-driven**: Zero hardcoded values in HTML
 - **Multi-app architecture**: Different apps load different settings
+- **Parameter forwarding**: Query params and hash fragments passed to iframes
 - **Works anywhere**: Any modern browser with JavaScript enabled
 - **Fully customizable**: Every aspect configurable via JSON
 
 ## Recent Updates
+
+- 2025-11-01: Added beautiful thin scrollbar styling
+  - 6px width, subtle colors
+  - Transparent track, rounded corners
+  - Smooth hover transitions
+
+- 2025-11-01: Fixed server to handle query parameters correctly
+  - `?app=` parameter no longer causes 404 errors
+  - Proper URL parsing separates pathname from query string
 
 - 2025-11-01: Added multi-app support
   - Apps are loaded based on `?app=` URL parameter
