@@ -4,7 +4,7 @@
     "header": {
       "show": true,
       "icon": "layout-dashboard",
-      "text": "myDashboard",
+      "text": "My Dashboard",
       "iconSize": "1.25rem",
       "textSize": "0.95rem"
   },
