@@ -77,7 +77,7 @@
         opacity: 0 !important;
       }
       
-      /* Beautiful thin scrollbar for sidebar navigation */
+      /* Beautiful thin scrollbar for sidebar navigation - will be styled dynamically */
       nav::-webkit-scrollbar {
         width: 6px;
       }
@@ -99,7 +99,7 @@
         scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
       }
       
-      /* Badge styling - small pill shape with 5px border radius */
+      /* Badge styling - small pill shape with border radius from settings */
       .menu-badge {
         display: inline-flex;
         align-items: center;
@@ -107,11 +107,11 @@
         font-size: 0.6875rem;
         font-weight: 500;
         line-height: 1.25;
-        border-radius: 5px;
         white-space: nowrap;
         transition: opacity 200ms ease-out;
       }
       
+      /* Badge variants - will be styled dynamically from settings */
       .badge-primary {
         background-color: hsl(var(--color-primary));
         color: hsl(var(--color-primary-foreground));
@@ -122,26 +122,6 @@
         color: hsl(var(--color-muted-foreground));
       }
       
-      .badge-success {
-        background-color: hsl(142, 71%, 65%);
-        color: white;
-      }
-      
-      .badge-warning {
-        background-color: hsl(38, 92%, 65%);
-        color: white;
-      }
-      
-      .badge-danger {
-        background-color: hsl(0, 84%, 72%);
-        color: white;
-      }
-      
-      .badge-info {
-        background-color: hsl(199, 89%, 62%);
-        color: white;
-      }
-      
       /* Mobile header transparent with hide/show animation */
       @media (max-width: 767px) {
         #mobile-header {
@@ -149,7 +129,6 @@
           top: 0;
           left: 0;
           right: 0;
-          background: transparent;
           z-index: 20;
           transition: transform 0.3s ease-out;
           transform: translateY(0);
@@ -171,8 +150,6 @@
       .text-secondary-foreground\/70 { color: hsl(var(--color-secondary-foreground) / 0.7); }
       .text-secondary-foreground\/80 { color: hsl(var(--color-secondary-foreground) / 0.8); }
       .text-muted-foreground { color: hsl(var(--color-muted-foreground)); }
-      .text-red-500 { color: rgb(239, 68, 68); }
-      .text-red-600 { color: rgb(220, 38, 38); }
       .border-border { border-color: hsl(var(--color-border)); }
     </style>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -184,7 +161,7 @@
         <aside id="sidebar-container"></aside>
         
         <!-- Mobile backdrop -->
-        <div id="mobile-backdrop" class="fixed inset-0 bg-black/30 z-30 transition-opacity duration-300 opacity-0 pointer-events-none md:hidden" aria-hidden="true"></div>
+        <div id="mobile-backdrop" class="fixed inset-0 z-30 transition-opacity duration-300 opacity-0 pointer-events-none md:hidden" aria-hidden="true"></div>
 
         <!-- Main content area -->
         <div class="relative flex flex-col flex-1 w-full min-w-0 overflow-y-auto">
@@ -238,18 +215,66 @@ async function fetchSettings() {
         if (!response.ok) {
             throw new Error(`Failed to load settings for app: ${appName}`);
         }
-        return await response.json();
+        let settingsText = await response.text();
+        
+        // Replace template tags in settings.json content
+        settingsText = replaceTemplateTagsInText(settingsText);
+        
+        return JSON.parse(settingsText);
     } catch (error) {
         console.error('Error loading settings:', error);
         mainContent.innerHTML = `
             <div class="p-8 text-center" data-testid="error-screen">
-                <h1 class="text-2xl font-bold text-red-600">App Not Found</h1>
+                <h1 class="text-2xl font-bold" style="color: ${appSettings?.theme?.errorTitle || 'rgb(239, 68, 68)'}">App Not Found</h1>
                 <p class="mt-4 text-muted-foreground">Could not load settings for app: <code>${appName}</code></p>
                 <p class="mt-2 text-sm text-muted-foreground">Please check that <code>${settingsPath}</code> exists.</p>
             </div>
         `;
         throw error;
     }
+}
+
+/**
+ * Replace template tags in text (for settings.json and other non-DOM content)
+ * Uses the same logic as url-parameter-replacer.js
+ */
+function replaceTemplateTagsInText(text) {
+    const STORAGE_KEY = "htmlTemplateParams";
+    const DEFAULT_VALUES = {
+        aid: "00",
+        afffname: "John",
+        afflname: "Doe",
+        bname: "Pancho, Inc.",
+        btel: "1-404-228-8580",
+        bemail: "support@mypancho.com",
+        bslogan: "Hosting Redefined",
+        bheadline: "Quality Hosting",
+        btagline: "Simply Works.",
+        blogo: "https://mypancho.com/apps/partners/pages/default-affiliate-logo.jpg",
+        bportrait: "https://mypancho.com/apps/partners/pages/default-business-portrait-image.jpg",
+        blandscape: "https://mypancho.com/apps/partners/pages/default-business-landscape-image.jpg",
+        bntfy: "ntfy.sh/mypancho-affiliate-website",
+    };
+    
+    // Get stored parameters from localStorage (same as url-parameter-replacer.js)
+    let storedParams = {};
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        storedParams = stored ? JSON.parse(stored) : {};
+    } catch (e) {
+        console.error("Error reading from localStorage:", e);
+    }
+    
+    // Merge with defaults (stored values take priority over defaults)
+    const params = { ...DEFAULT_VALUES, ...storedParams };
+    
+    // Replace all template tags in the text
+    for (const [tag, value] of Object.entries(params)) {
+        const regex = new RegExp(`\\[${tag}\\]`, 'g');
+        text = text.replace(regex, value);
+    }
+    
+    return text;
 }
 
 function processURLOverrides(settings) {
@@ -277,9 +302,73 @@ function processURLOverrides(settings) {
 function applyTheme(theme) {
     if (!theme) return;
     const root = document.documentElement;
+    
+    // Apply base colors
     for (const [key, value] of Object.entries(theme)) {
-        root.style.setProperty(`--color-${key}`, value);
+        if (!key.startsWith('_comment')) {
+            root.style.setProperty(`--color-${key}`, value);
+        }
     }
+    
+    // Apply mobile backdrop color
+    if (theme.mobileBackdrop) {
+        mobileBackdrop.style.backgroundColor = theme.mobileBackdrop;
+    }
+    
+    // Apply mobile header background
+    const mobileHeader = document.getElementById('mobile-header');
+    if (mobileHeader && theme.mobileHeaderBg) {
+        mobileHeader.style.backgroundColor = theme.mobileHeaderBg;
+    }
+    
+    // Apply scrollbar colors dynamically
+    const scrollbarStyle = document.createElement('style');
+    scrollbarStyle.id = 'dynamic-scrollbar-styles';
+    scrollbarStyle.textContent = `
+        nav::-webkit-scrollbar-thumb {
+            background: ${theme.scrollbarThumb || 'rgba(0, 0, 0, 0.1)'};
+        }
+        nav::-webkit-scrollbar-thumb:hover {
+            background: ${theme.scrollbarThumbHover || 'rgba(0, 0, 0, 0.2)'};
+        }
+        nav::-webkit-scrollbar-track {
+            background: ${theme.scrollbarTrack || 'transparent'};
+        }
+        nav {
+            scrollbar-color: ${theme.scrollbarThumb || 'rgba(0, 0, 0, 0.1)'} ${theme.scrollbarTrack || 'transparent'};
+        }
+    `;
+    
+    // Remove old scrollbar styles if they exist
+    const oldStyle = document.getElementById('dynamic-scrollbar-styles');
+    if (oldStyle) oldStyle.remove();
+    document.head.appendChild(scrollbarStyle);
+    
+    // Apply badge colors dynamically
+    const badgeStyle = document.createElement('style');
+    badgeStyle.id = 'dynamic-badge-styles';
+    badgeStyle.textContent = `
+        .badge-success {
+            background-color: ${theme.badgeSuccess || 'hsl(142, 71%, 65%)'};
+            color: ${theme.badgeSuccessForeground || 'white'};
+        }
+        .badge-warning {
+            background-color: ${theme.badgeWarning || 'hsl(38, 92%, 65%)'};
+            color: ${theme.badgeWarningForeground || 'white'};
+        }
+        .badge-danger {
+            background-color: ${theme.badgeDanger || 'hsl(0, 84%, 72%)'};
+            color: ${theme.badgeDangerForeground || 'white'};
+        }
+        .badge-info {
+            background-color: ${theme.badgeInfo || 'hsl(199, 89%, 62%)'};
+            color: ${theme.badgeInfoForeground || 'white'};
+        }
+    `;
+    
+    const oldBadgeStyle = document.getElementById('dynamic-badge-styles');
+    if (oldBadgeStyle) oldBadgeStyle.remove();
+    document.head.appendChild(badgeStyle);
 }
 
 function applyPageSettings(page) {
@@ -305,6 +394,44 @@ function applyStylingSettings(styling) {
         const style = document.createElement('style');
         style.textContent = `.lucide { stroke-width: ${styling.iconStrokeWidth}; }`;
         document.head.appendChild(style);
+    }
+    
+    // Apply border radius settings
+    if (styling.borderRadius) {
+        const radiusStyle = document.createElement('style');
+        radiusStyle.id = 'dynamic-radius-styles';
+        radiusStyle.textContent = `
+            .menu-badge {
+                border-radius: ${styling.borderRadius.badge || '5px'};
+            }
+            button, .rounded-md, .rounded-lg {
+                border-radius: ${styling.borderRadius.button || '0.5rem'};
+            }
+        `;
+        const oldRadiusStyle = document.getElementById('dynamic-radius-styles');
+        if (oldRadiusStyle) oldRadiusStyle.remove();
+        document.head.appendChild(radiusStyle);
+    }
+    
+    // Apply transition settings
+    if (styling.transitions) {
+        const transitionStyle = document.createElement('style');
+        transitionStyle.id = 'dynamic-transition-styles';
+        transitionStyle.textContent = `
+            .submenu-children {
+                transition: height ${styling.transitions.submenuDuration || '0.2s'} ease-out, 
+                           opacity ${styling.transitions.submenuDuration || '0.2s'} ease-out;
+            }
+            aside {
+                transition: width ${styling.transitions.sidebarDuration || '300ms'} cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .link-label, .submenu-label, .profile-info, .header-label, .logo-wrapper, .menu-badge {
+                transition: opacity ${styling.transitions.opacityDuration || '200ms'} ease-out;
+            }
+        `;
+        const oldTransitionStyle = document.getElementById('dynamic-transition-styles');
+        if (oldTransitionStyle) oldTransitionStyle.remove();
+        document.head.appendChild(transitionStyle);
     }
 }
 
@@ -363,10 +490,11 @@ function findNavItemByHref(navItems, href) {
 function createLinkHtml(item, isInSubmenu = false) {
     const currentHash = window.location.hash || '#/';
     const isActive = currentHash === item.href || currentHash.startsWith(item.href + '?') || currentHash.startsWith(item.href + '#');
-    const activeClasses = isInSubmenu ? 'text-primary' : 'bg-primary\/10 text-primary';
-    const defaultClasses = isInSubmenu 
-        ? 'hover:bg-muted text-secondary-foreground\/70 hover:text-secondary-foreground'
-        : 'hover:bg-muted text-secondary-foreground\/80 hover:text-secondary-foreground';
+    const theme = appSettings.theme;
+    
+    const activeStyle = isInSubmenu 
+        ? `color: ${theme.activeText || theme.primary};` 
+        : `background-color: ${theme.activeBg || 'hsl(220, 13%, 61%, 0.1)'}; color: ${theme.activeText || theme.primary};`;
     
     const sizeClasses = isInSubmenu ? 'text-sm p-2 my-0.5' : 'p-2 my-2.5';
     const iconSize = isInSubmenu ? 16 : 20;
@@ -376,15 +504,17 @@ function createLinkHtml(item, isInSubmenu = false) {
     return `
         <a href="${item.href}" 
            data-testid="link-${item.label.toLowerCase().replace(/\s+/g, '-')}"
-           class="nav-link relative flex items-center ${sizeClasses} font-normal rounded-md cursor-pointer transition-colors group ${isActive ? activeClasses : defaultClasses}">
-            ${isInSubmenu ? `<div class="absolute left-0 h-full w-0.5 ${isActive ? 'bg-primary' : ''}"></div>` : ''}
+           class="nav-link relative flex items-center ${sizeClasses} font-normal rounded-md cursor-pointer transition-colors group"
+           style="${isActive ? activeStyle : ''}">
+            ${isInSubmenu ? `<div class="absolute left-0 h-full w-0.5" style="background-color: ${isActive ? (theme.activeText || theme.primary) : 'transparent'}"></div>` : ''}
             <i data-lucide="${item.icon}" class="w-${iconSize/4} h-${iconSize/4} flex-shrink-0 ${isInSubmenu ? 'mr-3' : ''}"></i>
-            <span class="link-label whitespace-nowrap ${isInSubmenu ? '' : 'ml-3'} transition-opacity duration-200 ease-out">${item.label}</span>
+            <span class="link-label whitespace-nowrap ${isInSubmenu ? '' : 'ml-3'}">${item.label}</span>
             ${badgeHtml}
             
-            ${!isInSubmenu ? `<div class="tooltip absolute left-full rounded-md px-2 py-1 ml-2 bg-primary text-primary-foreground text-sm invisible opacity-20 -translate-x-3 transition-all group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 z-10 whitespace-nowrap">
+            ${!isInSubmenu ? `<div class="tooltip absolute left-full rounded-md px-2 py-1 ml-2 text-sm invisible opacity-20 -translate-x-3 transition-all group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 z-10 whitespace-nowrap"
+                style="background-color: ${theme.tooltipBg || theme.primary}; color: ${theme.tooltipText || theme.primaryForeground};">
                 ${item.label}
-                <div class="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-primary rotate-45"></div>
+                <div class="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 rotate-45" style="background-color: ${theme.tooltipBg || theme.primary};"></div>
             </div>` : ''}
         </a>`;
 }
@@ -395,6 +525,7 @@ function createSubmenuHtml(item) {
         currentHash === child.href || currentHash.startsWith(child.href + '?') || currentHash.startsWith(child.href + '#')
     );
     const isOpen = openSubmenus.has(item.path);
+    const theme = appSettings.theme;
     
     let childrenHtml = '';
     item.children.forEach(child => {
@@ -407,15 +538,17 @@ function createSubmenuHtml(item) {
         <div class="submenu-container">
             <div data-submenu-path="${item.path}" 
                  data-testid="submenu-${item.path}"
-                 class="submenu-toggle relative flex items-center p-2 my-2.5 font-normal rounded-md cursor-pointer transition-colors group ${isChildActive ? 'text-primary' : 'hover:bg-muted text-secondary-foreground\/80 hover:text-secondary-foreground'}">
+                 class="submenu-toggle relative flex items-center p-2 my-2.5 font-normal rounded-md cursor-pointer transition-colors group"
+                 style="${isChildActive ? `color: ${theme.activeText || theme.primary}` : ''}">
                 <i data-lucide="${item.icon}" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="submenu-label flex-1 whitespace-nowrap ml-3 transition-opacity duration-200 ease-out">${item.label}</span>
+                <span class="submenu-label flex-1 whitespace-nowrap ml-3">${item.label}</span>
                 ${badgeHtml}
                 <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 ml-auto ${isOpen ? 'rotated' : ''}" style="display: none;"></i>
                 
-                <div class="tooltip absolute left-full rounded-md px-2 py-1 ml-2 bg-primary text-primary-foreground text-sm invisible opacity-20 -translate-x-3 transition-all group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 z-10 whitespace-nowrap">
+                <div class="tooltip absolute left-full rounded-md px-2 py-1 ml-2 text-sm invisible opacity-20 -translate-x-3 transition-all group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 z-10 whitespace-nowrap"
+                    style="background-color: ${theme.tooltipBg || theme.primary}; color: ${theme.tooltipText || theme.primaryForeground};">
                     ${item.label}
-                    <div class="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-primary rotate-45"></div>
+                    <div class="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 rotate-45" style="background-color: ${theme.tooltipBg || theme.primary};"></div>
                 </div>
             </div>
             <div class="submenu-children pl-5 ${isOpen ? '' : 'collapsed'}" style="height: auto;">
@@ -435,7 +568,10 @@ function createHeaderHtml(item) {
 }
 
 function renderSidebar() {
-    const { navItems, profile, logoUrl } = appSettings.sidebar;
+    const { navItems, profile, logoUrl, logo, header } = appSettings.sidebar;
+    const theme = appSettings.theme;
+    
+   
     
     let navHtml = '';
     navItems.forEach(item => {
@@ -454,41 +590,59 @@ function renderSidebar() {
         ? `fixed top-0 left-0 h-full z-40 transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:hidden`
         : 'hidden md:flex';
 
+    const logoStyle = logo ? `
+        height: ${logo.height || '2.5rem'};
+        width: ${logo.width || 'auto'};
+        max-width: ${logo.maxWidth || '8rem'};
+        padding: ${logo.padding || '0.25rem'};
+        object-fit: ${logo.objectFit || 'contain'};
+        display: ${logo.display || 'block'};
+    ` : 'height: 2.5rem; width: auto; display: block;';
+
     sidebarContainer.innerHTML = `
-        <aside class="${mobileClasses} ${isMobile ? 'w-64' : widthClass} ${isEffectivelyExpanded ? 'sidebar-expanded' : ''} h-full flex flex-col bg-white border-r"
-               style="border-color: ${appSettings.theme?.sidebarBorder || '#f0f0f0'}; transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1); will-change: width;"
+        <aside class="${mobileClasses} ${isMobile ? 'w-64' : widthClass} ${isEffectivelyExpanded ? 'sidebar-expanded' : ''} h-full flex flex-col border-r"
+               style="background-color: ${theme.sidebarBg || '#ffffff'}; border-color: ${theme.sidebarBorder || '#f0f0f0'}; transition: width ${appSettings.styling?.transitions?.sidebarDuration || '300ms'} cubic-bezier(0.4, 0, 0.2, 1); will-change: width;"
                data-testid="sidebar">
-            <div class="logo-container pr-4 pt-4 pb-2 pl-[1.25rem] flex items-center ${isEffectivelyExpanded ? 'justify-between' : 'justify-center'}"
+            <div class="logo-container pr-4 pt-4 pb-3 pl-[1.25rem] flex items-center ${isEffectivelyExpanded ? 'justify-between' : 'justify-center'}"
                  style="${isEffectivelyExpanded ? 'gap: 1.25rem;' : ''}">
-                <div class="logo-wrapper overflow-hidden transition-[max-width] duration-300 ease-out ${isEffectivelyExpanded ? 'max-w-32' : 'max-w-0'}">
-                    <img src="${logoUrl}" class="h-10 w-auto block" alt="${appSettings.messages?.ariaLabels?.logo || 'Logo'}" data-testid="logo" />
+                <div class="logo-wrapper flex items-center overflow-hidden transition-[max-width] duration-300 ease-out ${isEffectivelyExpanded ? 'max-w-full' : 'max-w-0'}" style="gap: 0.75rem;">
+                    <div class="flex items-center justify-center w-9 h-9 rounded-lg flex-shrink-0" style="background-color: ${theme.primary || 'hsl(220, 13%, 61%)'};">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5" style="color: ${theme.primaryForeground || 'white'};"></i>
+                    </div>
+                    <span class="text-lg font-semibold text-secondary-foreground whitespace-nowrap">Dashboard</span>
                 </div>
                 <button id="sidebar-toggle" 
                         data-testid="button-sidebar-toggle"
-                        class="p-1.5 rounded-md hover:bg-muted" 
-                        style="background-color: ${appSettings.theme?.toggleButtonBg || '#f5f5f5'};"
+                        class="p-1.5 rounded-md hover:bg-muted flex-shrink-0" 
+                        style="background-color: ${theme.toggleButtonBg || '#f5f5f5'};"
                         aria-label="${isEffectivelyExpanded ? (appSettings.messages?.ariaLabels?.collapseSidebar || 'Collapse sidebar') : (appSettings.messages?.ariaLabels?.expandSidebar || 'Expand sidebar')}">
                     <i data-lucide="${isEffectivelyExpanded ? 'chevron-left' : 'chevron-right'}" class="w-5 h-5 text-secondary-foreground"></i>
                 </button>
+            </div>
+            
+            <div class="px-4 mb-3 ${isEffectivelyExpanded ? '' : 'opacity-0'}" style="transition: opacity ${appSettings.styling?.transitions?.opacityDuration || '200ms'} ease-out;">
+                <div class="h-px" style="background-color: ${theme.sidebarBorder || '#e5e5e5'};"></div>
             </div>
             
             <nav class="flex-1 px-3 overflow-y-auto overflow-x-hidden">
                 ${navHtml}
             </nav>
             
-            <div class="mt-auto border-t" style="border-color: ${appSettings.theme?.sidebarBorder || '#f0f0f0'};">
+            <div class="mt-auto border-t" style="border-color: ${theme.sidebarBorder || '#f0f0f0'};">
                 <div id="profile-section" 
                      data-testid="profile-link"
                      data-href="${profile.href}"
                      data-iframe-url="${profile.iframeUrl || ''}"
-                     class="flex items-center ${isEffectivelyExpanded ? 'p-4' : 'p-3 justify-center'} cursor-pointer transition-all duration-200 hover:bg-secondary/50"
-                     style="transition: all 200ms ease; ${isEffectivelyExpanded ? 'gap: 1.25rem;' : ''}">
+                     class="flex items-center ${isEffectivelyExpanded ? 'p-4' : 'p-3 justify-center'} cursor-pointer transition-all duration-200"
+                     style="transition: all 200ms ease; ${isEffectivelyExpanded ? 'gap: 1.25rem;' : ''}"
+                     onmouseover="this.style.backgroundColor='${theme.profileHoverBg || 'hsl(210, 40%, 96.1%, 0.5)'}'"
+                     onmouseout="this.style.backgroundColor='transparent'">
                     <div class="flex-shrink-0">
-                        <div class="w-10 h-10 rounded-md flex items-center justify-center" style="background-color: ${appSettings.theme?.toggleButtonBg || '#f5f5f5'};">
+                        <div class="w-10 h-10 rounded-md flex items-center justify-center" style="background-color: ${theme.profileIconBg || '#f5f5f5'};">
                             <i data-lucide="${profile.icon}" class="w-5 h-5 text-secondary-foreground"></i>
                         </div>
                     </div>
-                    <div class="profile-info flex-1 min-w-0 transition-opacity duration-200 ease-out ${isEffectivelyExpanded ? 'opacity-100' : 'opacity-0'}">
+                    <div class="profile-info flex-1 min-w-0 ${isEffectivelyExpanded ? 'opacity-100' : 'opacity-0'}">
                         <h4 class="font-semibold text-sm text-secondary-foreground truncate">${profile.name}</h4>
                         <p class="text-xs text-muted-foreground truncate mt-0.5">${profile.role}</p>
                     </div>
@@ -637,6 +791,7 @@ function renderMainContent() {
     }
     
     const finalUrlString = finalUrl.toString();
+    const theme = appSettings.theme;
     
     // Determine the title - use profile name if this is a profile page, otherwise use nav item label
     let frameTitle = appSettings.messages?.ariaLabels?.contentFrame || 'Content';
@@ -648,8 +803,10 @@ function renderMainContent() {
     
     mainContent.innerHTML = `
         <div class="w-full h-full relative">
-            <div id="iframe-loader" class="absolute inset-0 flex items-center justify-center bg-secondary/50 backdrop-blur-sm z-10">
-                <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div id="iframe-loader" class="absolute inset-0 flex items-center justify-center backdrop-blur-sm z-10"
+                style="background-color: ${theme.loaderBg || 'rgba(0, 0, 0, 0.05)'};">
+                <div class="w-12 h-12 rounded-full animate-spin" 
+                    style="border: 4px solid ${theme.loaderSpinner || theme.primary}; border-top-color: ${theme.loaderSpinnerTransparent || 'transparent'};"></div>
             </div>
             <iframe
                 id="content-iframe"
@@ -673,9 +830,10 @@ function renderMainContent() {
 }
 
 function showSecurityError(message) {
+    const theme = appSettings.theme;
     mainContent.innerHTML = `
         <div class="p-8 text-center" data-testid="error-screen">
-            <h1 class="text-2xl font-bold text-red-600">Content Blocked</h1>
+            <h1 class="text-2xl font-bold" style="color: ${theme.errorTitle || 'rgb(239, 68, 68)'}">Content Blocked</h1>
             <p class="mt-4 text-muted-foreground">${message}</p>
         </div>
     `;
@@ -804,39 +962,13 @@ function handleResize() {
 }
 
 // ==================== MOBILE HEADER CONTROLLER ====================
+// Disabled - was causing hamburger menu to disappear on click
 
 let isHeaderVisible = true;
 
 function initMobileHeaderGestures() {
-    if (!isMobile) return;
-    
-    const mobileHeader = document.getElementById('mobile-header');
-    if (!mobileHeader) {
-        console.warn('Mobile header element not found');
-        return;
-    }
-    
-    console.log('Mobile header gestures initialized');
-    
-    // Listen on the entire document for any tap
-    document.addEventListener('touchstart', (e) => {
-        // Check if the touch is on the header itself
-        if (mobileHeader.contains(e.target)) {
-            console.log('Touch on header - showing');
-            mobileHeader.classList.remove('header-hidden');
-            isHeaderVisible = true;
-            return;
-        }
-        
-        // Touch anywhere else - toggle
-        console.log('Touch on content - toggling', isHeaderVisible);
-        if (isHeaderVisible) {
-            mobileHeader.classList.add('header-hidden');
-        } else {
-            mobileHeader.classList.remove('header-hidden');
-        }
-        isHeaderVisible = !isHeaderVisible;
-    }, { passive: true });
+    // Function disabled to prevent hamburger menu from disappearing
+    return;
 }
 
 // ==================== INITIALIZATION ====================
@@ -864,7 +996,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             initMobileHeaderGestures();
         }
         
-        mobileMenuButton.addEventListener('click', () => {
+        mobileMenuButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             isMobileMenuOpen = !isMobileMenuOpen;
             updateMobileMenu();
         });
@@ -881,7 +1015,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     } catch (error) {
         console.error("Failed to initialize application:", error);
-        mainContent.innerHTML = `<p class="p-8 text-red-500">Error: Failed to load settings.</p>`;
+        mainContent.innerHTML = `<p class="p-8" style="color: ${appSettings?.theme?.errorText || 'rgb(220, 38, 38)'}">Error: Failed to load settings.</p>`;
     }
 });
     </script>
